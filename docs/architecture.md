@@ -40,3 +40,11 @@ R3 Media generation + title/alt/caption/description after visual verification; q
 - OpenAlex has rate limits and can return unrelated academic works. Provider metadata is a **lead**, not a validated primary source.
 - Brave API may provide monthly credits but requires a card and has result-retention restrictions; it is **not** silently enabled in the MVP.
 - Google Custom Search JSON API is closed to new customers; self-hosted Chrome scraping Google Search is not the default for policy/reliability reasons.
+
+## R3 initial editorial and media gate
+
+- Editor V2 receives real owner-source anchor IDs and only retrieved public URLs; it must preserve conditional model-specific statements.
+- Quality audit verifies practical sections, avoids filler, requires grounded source detail only when it actually appeared in the supplied original, validates contextual links against the retrieval record, checks the three-part intro with a bold direct answer.
+- When only particular H2s fail, the bounded Codex rewrite response must name the same H2s. The patcher replaces only those bodies and leaves everything else untouched.
+- Image planning exports one cover and one per H2 task, but no SEO title, alt, caption, or description is filled until actual image creation and human/vision inspection. Hash and review are required for future media readiness.
+- These checks are **heuristics**, not factual verification or any AI-origin scoring. Human editorial review remains required. R3 full image generation and publication are pending.

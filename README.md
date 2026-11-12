@@ -16,6 +16,8 @@
 ```bash
 python3 -m andy_write pipeline --job examples/jobs/pairdoll-unboxing.json --provider codex --model gpt-6.1-terra --target-words 1000
 python3 -m andy_write usage --job examples/jobs/pairdoll-unboxing.json
+python3 -m andy_write quality --job examples/jobs/pairdoll-unboxing.json --draft .runs/pairdoll-unboxing/article-auto-final.md
+python3 -m andy_write media-plan --job examples/jobs/pairdoll-unboxing.json --draft .runs/pairdoll-unboxing/article-auto-final.md
 python3 -m andy_write review --job examples/jobs/pairdoll-unboxing.json --draft .runs/pairdoll-unboxing/article-auto-final.md
 python3 -m andy_write benchmark --job examples/jobs/pairdoll-unboxing.json
 python3 -m unittest discover -s tests -v
@@ -26,7 +28,7 @@ python3 -m unittest discover -s tests -v
 - 默认支持美国 Mac mini 的 Codex CLI + GPT-6.1 Terra (最低 0.159.0，当前已验证 0.167.2)，调用真实模型完成英文初稿、精修和限次字数修订；无需单独的 OpenAI API Key，但受到 ChatGPT Plus Codex 额度限制。
 - 目标字数默认 1000 词，容差 7%；按真实模型响应记录 Tokens、缓存命中、阶段耗时；重复任务命中本地结果缓存不会重复耗费额度。
 - 可选 --provider openai 需要独立 OPENAI_API_KEY；没有凭据会明确失败，不假冒模型生成。
-- R3 Media、Quality 正式门禁、Notion、Outreach、Publish 尚未实现。
+- R3 已新增 Editor/Quality 基础检查和有条件的受影响章节定向修复；并新增封面 + 每个 H2 的媒体规划、图片文件校验门禁。**图片实际生成、视觉审核、Notion、Outreach、WordPress 发布尚未实现**。
 
 ## 安全规则
 
@@ -35,3 +37,5 @@ python3 -m unittest discover -s tests -v
 详细信息见 [ARCHITECTURE](docs/architecture.md)、[UPSTREAM](docs/upstreams.md)、[AGENTS](AGENTS.md)。
 
 完整 R2 Codex 接入指南：[Codex GPT-6.1 写作及用量日志](docs/codex-cli-r2.md)。
+
+新一期 R3 Editor / Quality / Media 对照报告：[实测质量改进与后续门禁](docs/editor-quality-r3-uat-2026-11-12.md)。

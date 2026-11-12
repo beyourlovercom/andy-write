@@ -12,6 +12,8 @@ from .llm import prepare_prompt, write_openai
 from .codex_cli import DEFAULT_MODEL, run_writing, summarize_usage
 from .review import check
 from .benchmark import scrape_qc_metrics, compare_draft
+from .content_quality import audit
+from .media import plan_media, verify_media_manifest
 
 def run(job: dict):
     out = outdir(job)
@@ -80,6 +82,43 @@ def review(job: dict, path: str):
     print(json.dumps({"status": result["status"], "metrics": result["metrics"],
                       "issues": result["issues"], "report": str(output)}, indent=2))
 
+def quality(job: dict, path: str):
+    """Independent non-LLM editorial QA for a local article."""
+    article_path = resolved(path)
+    if not article_path.is_file():
+        raise FileNotFoundError(str(article_path))
+    out = outdir(job)
+    research_path, source_path = out / "research-pack.json", out / "source-catalog.json"
+    pack = json.loads(research_path.read_text(encoding="utf-8")) if research_path.is_file() else None
+    catalog = json.loads(source_path.read_text(encoding="utf-8")) if source_path.is_file() else None
+    body = article_path.read_text(encoding="utf-8")
+    report = audit(body, job, pack, catalog)
+    static = check(body, job)
+    status = "REVIEW_REQUIRED" if report["issues"] or static["issues"] else "RULE_CHECK_PASS"
+    output = out / ("quality-report-" + article_path.stem + ".json")
+    write_json(output, {"job_id": job["job_id"], "path": str(article_path),
+                       "status": status, "content": report, "static": static,
+                       "caveat": "Editorial heuristics only; no AI-authorship prediction or fact approval."})
+    print(json.dumps({
+        "status": status, "report": str(output),
+        "content_issues": [(v["code"], v.get("heading")) for v in report["issues"]],
+        "source_specificity": [report["source_details_present"], report["eligible_source_detail_count"]],
+        "links": {"internal": len(report["links"]["internal"]), "external": len(report["links"]["external"])},
+        "introduction": report["introduction"]
+    }, indent=2))
+
+def media_plan(job: dict, path: str):
+    article_path = resolved(path)
+    if not article_path.is_file():
+        raise FileNotFoundError(str(article_path))
+    manifest = plan_media(job, article_path.read_text(encoding="utf-8"))
+    out = outdir(job) / "media-manifest.json"
+    write_json(out, manifest)
+    validated = verify_media_manifest(manifest)
+    print(json.dumps({"file": str(out), "stage": manifest["stage"],
+                      "planned": len(manifest["assets"]),
+                      "verified": 0, "publish_ready": validated["status"] == "READY"}, indent=2))
+
 def benchmark(job: dict):
     bench = scrape_qc_metrics()
     dest = outdir(job) / "benchmark.json"
@@ -93,7 +132,7 @@ def benchmark(job: dict):
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Andy Write V1.0 R0–R2")
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("run", "write", "pipeline", "usage", "review", "benchmark"):
+    for name in ("run", "write", "pipeline", "usage", "review", "quality", "media-plan", "benchmark"):
         sp = sub.add_parser(name)
         sp.add_argument("--job", required=True)
         if name in ("write", "pipeline"):
@@ -103,7 +142,7 @@ def main(argv: list[str] | None = None) -> int:
             sp.add_argument("--tolerance", type=float, default=0.07)
             sp.add_argument("--max-revisions", type=int, default=1)
             sp.add_argument("--force", action="store_true")
-        if name == "review":
+        if name in ("review", "quality", "media-plan"):
             sp.add_argument("--draft", required=True)
     args = parser.parse_args(argv)
     try:
@@ -115,6 +154,10 @@ def main(argv: list[str] | None = None) -> int:
                   args.tolerance, args.max_revisions, args.force)
         elif args.command == "review":
             review(job, args.draft)
+        elif args.command == "quality":
+            quality(job, args.draft)
+        elif args.command == "media-plan":
+            media_plan(job, args.draft)
         elif args.command == "usage":
             print(json.dumps(summarize_usage(outdir(job)), indent=2))
         elif args.command == "benchmark":

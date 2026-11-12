@@ -11,3 +11,4 @@ Scope: this repo only. No commands may mutate PairDoll, KissSelf, BeYourLover or
 - Do not claim actual live SERP collection unless SERPAPI_API_KEY is configured and the call succeeded.
 - Local drafts are NOT WordPress drafts, and no publishing success should be claimed.
 - Codex writing is permitted in read-only mode, with explicit GPT-6.1 Terra and a per-call real-usage ledger under Git-ignored .runs/. No production publishing or unrelated repository edits.
+- Quality audits may flag low-value prose but are not AI-detector scores. Rewrite only affected H2s; do not alter untouched sections. Image planning does NOT mean image generation succeeded. All real image metadata requires visual inspection and valid local file hash.
