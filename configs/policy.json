@@ -1,0 +1,9 @@
+{
+  "default_research_mode": "curated",
+  "require_reference_for_pairdoll": true,
+  "never_publish_without_approval": true,
+  "r0_r2_wordpress_writes": false,
+  "internal_note_markers": ["Editorial image placement", "English article draft", "adapted from a detailed beginner", "AI Draft", "TODO"],
+  "required_article_sections": ["Conclusion"],
+  "max_external_links_for_demo": 3
+}
