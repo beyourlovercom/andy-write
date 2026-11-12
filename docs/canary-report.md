@@ -20,3 +20,17 @@
 - Some article care instructions are manufacturer/material-specific; no universal powder, oil, heat-gun, solvent, adhesive or forced joint rule was adopted.
 - R3 images, SEO quality evaluation, Notion publication approval, WordPress Application Password and post-publication monitoring are not implemented.
 - Sample English article in `examples/output/pairdoll-unboxing-v2.md` is **review-only**, not a WordPress post.
+
+## Qualitative QC comparator: three 2025 QuickCreator samples (read-only)
+1. [2025-12-20 Doll Skills & Intimacy Preferences](https://kissself.com/how-to-experiment-with-sex-skills-and-intimacy-preferences-using-a-sex-doll.html): Broad tutorial, clear reader progression from choosing materials to preparation, use preferences and FAQ. Strong at topical breadth; some sweeping care/material claims still require manufacturer verification.
+2. [2025-11-08 Lube Compatibility](https://kissself.com/how-to-check-sex-toy-lube-compatibility-and-safety.html): User-centered material categories and comparative intent, but uses first-person test-like anecdotes not evidenced in the output. Treat as organization reference, not permission to fabricate experience.
+3. [2025-12-24 Sex Positions & Relationships](https://kissself.com/why-sex-positions-unlock-hidden-passion.html): Moves from underlying reader motivation to concrete options, then communication and help; useful chapter progression, but broad assertions need source checks.
+
+**Our V2 vs these QC samples**:
+- Search intent: our narrower arrival-day checklist answers the first-day query; QC samples typically cover multiple subtopics.
+- Natural voice: our paragraphs use varied lengths and product-condition detail; no invented firsthand story. Median sentence length ~15.5 whitespace words, compared only descriptively (not a proof of human authorship).
+- Information design: our one inspection table organizes real checks. QC templates routinely include Key Takeaways, FAQ and more tables; do not force that structure when unnecessary.
+- Provenance: our external evidence targets FTC purchase records and CDC/NIOSH handling risks; material-specific cleaning is explicitly deferred to model instructions. No fake customer-review percentages.
+- Gaps: original packaging photos, verified PairDoll model-specific facts, images and editorial blind rating are still absent. Structural parity is not quality parity.
+
+**Result**: first editorial method comparison completed (not a blind study). The current revision is safer and more focused than a generic template, but it is not declared superior to QC without independent review and final evidence checks.
