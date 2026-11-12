@@ -34,3 +34,11 @@
 - Gaps: original packaging photos, verified PairDoll model-specific facts, images and editorial blind rating are still absent. Structural parity is not quality parity.
 
 **Result**: first editorial method comparison completed (not a blind study). The current revision is safer and more focused than a generic template, but it is not declared superior to QC without independent review and final evidence checks.
+
+
+## 2026-11-12 free DC research recheck
+- Changed the example job to `research_mode=dc_free` with public keyless OpenAlex metadata discovery and curated existing URLs.
+- Fresh run: 4 known URLs attempted; 3 retrieved, FTC URL unavailable. 8 OpenAlex scholarly records discovered (not full-text verified); 2 OpenAlex topic queries succeeded.
+- Total candidate entries: 12; only 3 confirmed actual webpage fetches. Scholarly entries explicitly marked `discovered_not_fetched`. Google SERP query phrases were **not executed** and no rankings inferred.
+- Re-running the same job used a seven-day local response cache and did not repeat provider requests.
+- This removes the requirement for a paid SerpApi plan for the limited source-research MVP. It does **not** recreate Google's whole-Web index, People Also Ask, organic rankings or commercial competitor discovery.

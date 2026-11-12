@@ -101,3 +101,58 @@ Care routines must follow manufacturer instructions."""
 
 if __name__ == "__main__":
     unittest.main()
+
+class TestFreeResearch(unittest.TestCase):
+    def setUp(self):
+        self.job = {"job_id": "test-free", "brand": "pairdoll",
+                    "topic": "manual handling", "research_mode": "dc_free",
+                    "research_urls": [], "queries": ["google test"],
+                    "openalex_queries": ["manual handling ergonomics"]}
+
+    def test_openalex_metadata_is_not_verified(self):
+        from andy_write.discovery import parse_openalex
+        raw = {"results": [
+            {"title": "Ergonomics and lifting", "id": "https://openalex.org/W42",
+             "doi": "https://doi.org/10.0000/example", "publication_date": "2025-01-01",
+             "primary_location": {"landing_page_url": "https://publisher.example.org/works/42"}},
+            {"title": "Blocked local work", "id": "https://127.0.0.1/W12"}]}
+        records = parse_openalex(raw, "ergonomics")
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]["status"], "discovered_not_fetched")
+        self.assertEqual(records[0]["verification"], "metadata_discovery_only")
+
+    def test_keyless_openalex_http_mock(self):
+        from andy_write.discovery import discover_openalex
+        payload = {"results": [{"title": "A research paper",
+            "id": "https://openalex.org/W99", "doi": "https://doi.org/10.0000/test"}]}
+        with patch("andy_write.discovery.curl_read", return_value=(200, json.dumps(payload))) as get:
+            result = discover_openalex(self.job)
+        self.assertEqual(result["method"], "openalex_keyless_metadata_NOT_GOOGLE_SERP")
+        self.assertEqual(len(result["sources"]), 1)
+        self.assertEqual(get.call_count, 1)
+
+    def test_dc_free_not_google_serp(self):
+        with patch("andy_write.research.collect_curated", return_value={"sources": [], "collection_mode": "curated_url_fetch_NOT_SERP"}):
+            with patch("andy_write.discovery.discover_openalex", return_value={
+                "sources": [], "queries_executed": ["ergonomics"], "queries_failed": []}):
+                p = research(self.job)
+        self.assertIn("NOT_GOOGLE_SERP", p["collection_mode"])
+        self.assertIsNone(p["organic_rankings"])
+        self.assertEqual(p["queries_not_executed_google"], ["google test"])
+
+    def test_cache_reuses_result_and_invalidates_changes(self):
+        from andy_write.cache import cached_research
+        import tempfile
+        mock_response = {"retrieved_at": __import__("datetime").datetime.now(
+            __import__("datetime").timezone.utc).isoformat(),
+            "sources": [], "collection_mode": "dc_free_curated_plus_openalex_NOT_GOOGLE_SERP"}
+        with tempfile.TemporaryDirectory() as folder:
+            with patch("andy_write.cache.research", return_value=mock_response) as mock:
+                dest = pathlib.Path(folder)
+                first, hit_one = cached_research(self.job, dest)
+                second, hit_two = cached_research(self.job, dest)
+                third, hit_three = cached_research({**self.job, "topic": "changed"}, dest)
+        self.assertFalse(hit_one)
+        self.assertTrue(hit_two)
+        self.assertFalse(hit_three)
+        self.assertEqual(mock.call_count, 2)

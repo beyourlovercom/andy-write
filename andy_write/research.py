@@ -139,10 +139,29 @@ def collect_serpapi(job: dict) -> dict:
     return {"collection_mode": "serpapi_live", "retrieved_at": now(),
             "queries_executed": job.get("queries", []), "sources": output}
 
+def collect_dc_free(job: dict) -> dict:
+    """Run curated source fetch + keyless public scholarly index via user's DC."""
+    from .discovery import discover_openalex
+    curated = collect_curated(job)
+    scholarly = discover_openalex(job)
+    return {
+        "collection_mode": "dc_free_curated_plus_openalex_NOT_GOOGLE_SERP",
+        "retrieved_at": now(),
+        "sources": curated["sources"] + scholarly["sources"],
+        "queries_executed_openalex": scholarly["queries_executed"],
+        "queries_failed_openalex": scholarly["queries_failed"],
+        "queries_not_executed_google": job.get("queries", []),
+        "organic_rankings": None,
+        "note": ("Free public-source discovery, not whole-web search; "
+                 "source metadata alone is not evidence of a factual claim.")
+    }
+
 def research(job: dict) -> dict:
     mode = job.get("research_mode", "curated")
     if mode == "curated":
         return collect_curated(job)
+    if mode == "dc_free":
+        return collect_dc_free(job)
     if mode == "serpapi":
         return collect_serpapi(job)
-    raise ValueError("Unknown research mode; use curated or serpapi")
+    raise ValueError("Unknown research mode; use dc_free, curated or serpapi")

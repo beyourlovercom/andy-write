@@ -5,6 +5,7 @@ import json
 import sys
 from .io import read_job, outdir, resolved, write_json, hashtext, now
 from .research import research
+from .cache import cached_research
 from .source import classify, evidence
 from .outline import section_plan, markdown_outline
 from .llm import prepare_prompt, write_openai
@@ -14,7 +15,7 @@ from .benchmark import scrape_qc_metrics, compare_draft
 def run(job: dict):
     out = outdir(job)
     original = resolved(job["source_path"]).read_text(encoding="utf-8")
-    pack = research(job)
+    pack, was_cached = cached_research(job, out)
     catalog = classify(original, job["source_url"])
     ledger = evidence(pack, catalog)
     sections = section_plan(job, catalog)
@@ -28,12 +29,12 @@ def run(job: dict):
     (out / "writing-prompt.md").write_text(prompt, encoding="utf-8")
     write_json(out / "run-manifest.json", {
         "job_id": job["job_id"], "created_at": now(), "source_sha256": hashtext(original),
-        "research_mode": pack["collection_mode"],
+        "research_mode": pack["collection_mode"], "research_cache_hit": was_cached,
         "steps_completed": ["R1 Research", "R1 Source", "R2 Outline", "R2 Prompt"],
         "prose_status": "NOT_GENERATED_BY_THIS_COMMAND", "wordpress_status": "UNTOUCHED"
     })
     print(json.dumps({"job_id": job["job_id"], "output": str(out),
-                      "research_mode": pack["collection_mode"],
+                      "research_mode": pack["collection_mode"], "research_cache_hit": was_cached,
                       "research_sources_retrieved": sum(x.get("status") == "retrieved" for x in pack["sources"]),
                       "reference_segments": len(catalog["segments"]), "sections": len(sections),
                       "draft": "prompt ready; model authoring needs --write or imported reviewed text"},
