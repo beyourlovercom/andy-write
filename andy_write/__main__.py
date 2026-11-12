@@ -9,6 +9,7 @@ from .cache import cached_research
 from .source import classify, evidence
 from .outline import section_plan, markdown_outline
 from .llm import prepare_prompt, write_openai
+from .codex_cli import DEFAULT_MODEL, run_writing, summarize_usage
 from .review import check
 from .benchmark import scrape_qc_metrics, compare_draft
 
@@ -40,16 +41,32 @@ def run(job: dict):
                       "draft": "prompt ready; model authoring needs --write or imported reviewed text"},
                      indent=2))
 
-def write(job: dict, model: str):
+def write(job: dict, model: str | None, provider: str, target: int,
+          tolerance: float, max_revisions: int, force: bool):
     out = outdir(job)
     prompt_path = out / "writing-prompt.md"
     if not prompt_path.is_file():
         raise RuntimeError("Run research/source/outline first")
-    draft, receipt = write_openai(prompt_path.read_text(encoding="utf-8"), model)
-    (out / "article-v1.md").write_text(draft + "\n", encoding="utf-8")
-    write_json(out / "model-receipt.json", receipt)
-    write_json(out / "review-v1.json", check(draft, job))
-    print("Model draft saved to local .runs/, no WordPress publishing")
+    if provider == "codex":
+        result = run_writing(job, model or DEFAULT_MODEL, target, tolerance,
+                             max_revisions, force)
+        print(json.dumps({"status": result["status"], "job_id": job["job_id"],
+             "model": result["model"], "target_words": target,
+             "actual_words": result["actual_words"],
+             "range": result["allowed_range"], "cache_hits": result["cache_hits"],
+             "usage": summarize_usage(out), "local_final":
+             str(out / "article-auto-final.md"),
+             "factual_review": "PENDING", "wordpress": "UNTOUCHED"}, indent=2))
+        return
+    if provider == "openai":
+        draft, receipt = write_openai(prompt_path.read_text(encoding="utf-8"),
+                                      model or "gpt-6.1-terra")
+        (out / "article-v1.md").write_text(draft + "\n", encoding="utf-8")
+        write_json(out / "model-receipt.json", receipt)
+        write_json(out / "review-v1.json", check(draft, job))
+        print("OpenAI API draft saved locally; no WordPress publishing")
+        return
+    raise ValueError("Choose provider=codex or provider=openai")
 
 def review(job: dict, path: str):
     if not path:
@@ -76,22 +93,30 @@ def benchmark(job: dict):
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Andy Write V1.0 R0–R2")
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("run", "write", "review", "benchmark"):
-        subparser = sub.add_parser(name)
-        subparser.add_argument("--job", required=True)
-        if name == "write":
-            subparser.add_argument("--model", default="gpt-5.2")
+    for name in ("run", "write", "pipeline", "usage", "review", "benchmark"):
+        sp = sub.add_parser(name)
+        sp.add_argument("--job", required=True)
+        if name in ("write", "pipeline"):
+            sp.add_argument("--provider", choices=["codex", "openai"], default="codex")
+            sp.add_argument("--model", default=None)
+            sp.add_argument("--target-words", type=int, default=1000)
+            sp.add_argument("--tolerance", type=float, default=0.07)
+            sp.add_argument("--max-revisions", type=int, default=1)
+            sp.add_argument("--force", action="store_true")
         if name == "review":
-            subparser.add_argument("--draft", required=True)
+            sp.add_argument("--draft", required=True)
     args = parser.parse_args(argv)
     try:
         job = read_job(args.job)
-        if args.command == "run":
+        if args.command in ("run", "pipeline"):
             run(job)
-        elif args.command == "write":
-            write(job, args.model)
+        if args.command in ("write", "pipeline"):
+            write(job, args.model, args.provider, args.target_words,
+                  args.tolerance, args.max_revisions, args.force)
         elif args.command == "review":
             review(job, args.draft)
+        elif args.command == "usage":
+            print(json.dumps(summarize_usage(outdir(job)), indent=2))
         elif args.command == "benchmark":
             benchmark(job)
         return 0

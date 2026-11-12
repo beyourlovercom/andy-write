@@ -37,7 +37,7 @@ Use the outline and safe references below. Unverified claims are NOT facts.
 Return Markdown article only. Do not write to any website.
 """
 
-def write_openai(prompt: str, model: str = "gpt-5.2") -> tuple[str, dict]:
+def write_openai(prompt: str, model: str = "gpt-6.1-terra") -> tuple[str, dict]:
     key = os.getenv("OPENAI_API_KEY")
     if not key:
         raise RuntimeError("OPENAI_API_KEY absent; cannot run autonomous model drafting")

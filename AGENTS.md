@@ -10,3 +10,4 @@ Scope: this repo only. No commands may mutate PairDoll, KissSelf, BeYourLover or
 - No third-party skill source is vendored in V1.0. Upstream references and licenses live in docs/upstreams.md.
 - Do not claim actual live SERP collection unless SERPAPI_API_KEY is configured and the call succeeded.
 - Local drafts are NOT WordPress drafts, and no publishing success should be claimed.
+- Codex writing is permitted in read-only mode, with explicit GPT-6.1 Terra and a per-call real-usage ledger under Git-ignored .runs/. No production publishing or unrelated repository edits.

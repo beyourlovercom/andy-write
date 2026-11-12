@@ -21,7 +21,7 @@ R2:
 - Policy (source, editorial safety, approval guardrail).
 
 ## Model interface
-For autonomous prose generation, an actual model backend must be configured. MVP supports OpenAI Responses API via environment key. Without an API key, the pipeline produces reviewed prompts and accepts a separate editorial draft from the active assistant. It never silently substitutes generic template text for a model-written article.
+Autonomous R2 prose generation now uses explicit GPT-6.1 Terra through the ChatGPT-authenticated Codex CLI: read-only mode, actual JSONL usage tracking, per-stage SHA-256 replay protection, independent word-counting, optional bounded rework. The OpenAI Responses API adapter remains an independently authenticated optional provider.
 
 ## Future
 R3 Media generation + title/alt/caption/description after visual verification; quality gates; outreach. R4 Notion approvals. R5 WordPress Application Password draft/approved publish with protected Post ID. None is active in this MVP.
