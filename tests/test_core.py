@@ -74,7 +74,7 @@ Care routines must follow manufacturer instructions."""
         self.assertEqual(research(j)["collection_mode"], "curated_url_fetch_NOT_SERP")
 
     def test_reject_non_public_urls(self):
-        for url in ["http://example.org", "https://localhost", "https://192.168.1.15", "file:///etc/passwd"]:
+        for url in ["http://example.org", "https://localhost", "https://192.168.1.15", "https://user:secret@example.com", "file:///etc/passwd"]:
             with self.assertRaises(ValueError):
                 validate_public_url(url)
 

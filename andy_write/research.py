@@ -43,6 +43,8 @@ class PageExtractor(HTMLParser):
 def validate_public_url(url: str) -> str:
     parsed = urllib.parse.urlsplit(url)
     host = parsed.hostname or ""
+    if parsed.username or parsed.password:
+        raise ValueError("Credentials in source URLs are forbidden")
     if parsed.scheme != "https" or not host or host in ("localhost", "127.0.0.1"):
         raise ValueError("Only public HTTPS source URLs are permitted")
     if any(part in host for part in ("@", " ", "\\", "%")) or host.endswith((".local", ".internal")):
@@ -70,6 +72,23 @@ def curl_read(url: str, timeout: int = 16) -> tuple[int, str]:
         raise RuntimeError(f"Source fetch failed ({result.returncode}): {result.stderr.strip()[:160]}")
     payload, code = result.stdout.rsplit(marker, 1)
     return int(code), payload
+
+def curl_secret_query(url: str, timeout: int = 18) -> tuple[int, str]:
+    """Keep SerpApi key out of process arguments and saved reports."""
+    validate_public_url(url)
+    if '"' in url or "\n" in url:
+        raise ValueError("Unsafe search URL")
+    proc = subprocess.run(
+        ["curl", "-L", "--proto", "=https", "--proto-redir", "=https",
+         "--silent", "--show-error", "--max-time", str(timeout),
+         "-w", "\n__ANDY_HTTP__%{http_code}", "--config", "-"],
+        input='url = "' + url + '"\n', capture_output=True,
+        text=True, timeout=timeout + 3)
+    marker = "\n__ANDY_HTTP__"
+    if marker not in proc.stdout:
+        raise RuntimeError("Live search failed without a valid HTTP response")
+    body, code = proc.stdout.rsplit(marker, 1)
+    return int(code), body
 
 def collect_curated(job: dict) -> dict:
     records = []
@@ -102,7 +121,7 @@ def collect_serpapi(job: dict) -> dict:
         params = {"engine": "google", "q": query, "hl": "en", "gl": "us", "num": 10, "api_key": key}
         uri = "https://serpapi.com/search.json?" + urllib.parse.urlencode(params)
         # API key is only used in the process invocation; never store the URL.
-        status, body = curl_read(uri, timeout=18)
+        status, body = curl_secret_query(uri, timeout=18)
         if status != 200:
             raise RuntimeError(f"SerpApi failed HTTP {status}")
         data = json.loads(body)
