@@ -8,6 +8,8 @@
 
 Codex CLI 仅限改写用户提供的完整文章；所有图片、视频生成均禁用。
 
+最高级规则已在 `main` 生效，验证命令：`python3 scripts/check_owner_rules.py`。
+
 
 独立、可版本化的 AI 写作 Skill 系统。**本仓库不运行 WordPress 发布动作**，也不向线上站点写入任何内容。
 
