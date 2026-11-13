@@ -1,11 +1,16 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+.venv/
 .DS_Store
 .env
 .env.*
 !.env.example
 .runs/
+.artifacts/
+dist/
+build/
+*.egg-info/
 *.key
 *.pem
 *credentials*.json

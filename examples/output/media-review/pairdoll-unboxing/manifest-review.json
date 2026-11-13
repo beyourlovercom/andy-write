@@ -1,0 +1,217 @@
+{
+  "job_id": "pairdoll-unboxing",
+  "scope": "GitHub review only; AI-generated illustrative scenes, not authenticated product photos; not WordPress uploaded",
+  "assets": [
+    {
+      "id": "cover",
+      "section": null,
+      "preview": "cover.webp",
+      "bytes": 150694,
+      "original_sha256": "4f4c607983dd61d2a70b7001685fb269f9f2206856996e9e0c13aa777026ae6f",
+      "seo_metadata": {
+        "title": "Delivery Carton Inspection Before Unboxing",
+        "alt": "Sealed shipping carton with phone camera, foam padding and box-opening tool on a table",
+        "caption": "Prepare to document the shipping carton before opening the package.",
+        "description": "Practical delivery-inspection setup with a sealed cardboard package, camera phone, protective foam, cutting tool and a plain face-down paper on the tabletop."
+      },
+      "machine_visual_review": {
+        "reviewer": "codex_image_vision_review",
+        "reviewed_at": "2026-11-13T00:59:36+00:00",
+        "observed_scene": "A sealed shipping carton is arranged with a phone camera viewfinder, foam packing pieces, an opening tool and a blank sheet on a worktable.",
+        "visible_objects": [
+          "sealed cardboard carton",
+          "phone camera",
+          "foam pieces",
+          "box opening tool",
+          "face-down blank paper"
+        ],
+        "mismatches": [],
+        "human_review": "PENDING"
+      },
+      "human_approval": "PENDING",
+      "ai_generated": true,
+      "authentic_product_photograph": false
+    },
+    {
+      "id": "h2-01",
+      "section": "What should you prepare before the package arrives?",
+      "preview": "h2-01.webp",
+      "bytes": 173596,
+      "original_sha256": "3df0bf62e1b308162aa806a0577ae26e1092a5dd9b9f6bca9b0534d12532d0ee",
+      "seo_metadata": {
+        "title": "Preparing the Unboxing Inspection Workspace",
+        "alt": "Cardboard shipping box, phone, measuring tape and folded cloth prepared on a table",
+        "caption": "Clear the unpacking area and keep the basic inspection tools together.",
+        "description": "Overhead preparation scene with a sealed cardboard shipment, phone, tape measure, folded cloth and blank paper arranged on a wooden worktable."
+      },
+      "machine_visual_review": {
+        "reviewer": "codex_image_vision_review",
+        "reviewed_at": "2026-11-13T00:59:36+00:00",
+        "observed_scene": "A sealed cardboard box, phone, measuring tape, folded cloth and blank sheet on a wooden table.",
+        "visible_objects": [
+          "sealed cardboard box",
+          "phone",
+          "measuring tape",
+          "folded cloth",
+          "blank sheet"
+        ],
+        "mismatches": [],
+        "human_review": "PENDING"
+      },
+      "human_approval": "PENDING",
+      "ai_generated": true,
+      "authentic_product_photograph": false
+    },
+    {
+      "id": "h2-02",
+      "section": "What should you check before you open the carton?",
+      "preview": "h2-02.webp",
+      "bytes": 168326,
+      "original_sha256": "4579355f8655fd8bf8b9d812ac9151c0576687a0cb40a1afee072f7092ed864d",
+      "seo_metadata": {
+        "title": "Photographing a Damaged Delivery Carton",
+        "alt": "Phone camera focused on a crushed corner and tear in a sealed cardboard carton",
+        "caption": "Record dents and tears on the closed carton before cutting the tape.",
+        "description": "Close-up documentation scene showing a phone pointed at a torn, compressed corner of a still-sealed brown shipping box."
+      },
+      "machine_visual_review": {
+        "reviewer": "codex_image_vision_review",
+        "reviewed_at": "2026-11-13T00:59:36+00:00",
+        "observed_scene": "A phone camera frames a crushed corner and tear on a sealed cardboard carton.",
+        "visible_objects": [
+          "sealed cardboard carton",
+          "crushed corner",
+          "tear",
+          "phone"
+        ],
+        "mismatches": [],
+        "human_review": "PENDING"
+      },
+      "human_approval": "PENDING",
+      "ai_generated": true,
+      "authentic_product_photograph": false
+    },
+    {
+      "id": "h2-03",
+      "section": "How can you unpack and move the doll safely?",
+      "preview": "h2-03.webp",
+      "bytes": 107672,
+      "original_sha256": "6cba5c105e10642b01bbc116f5df6e1ea9c7a9750bfdc0002b9eb839c9ee8b49",
+      "seo_metadata": {
+        "title": "Supporting a Long Package During Unboxing",
+        "alt": "Gloved hands supporting a long foam-padded cardboard shipping parcel above a clear floor",
+        "caption": "Keep an awkward package supported from below when moving it.",
+        "description": "Practical moving scene showing pairs of gloved hands under a long cardboard carton with protective foam visible and uncluttered floor space beneath."
+      },
+      "machine_visual_review": {
+        "reviewer": "codex_image_vision_review",
+        "reviewed_at": "2026-11-13T00:59:36+00:00",
+        "observed_scene": "Gloved hands support a long foam-padded cardboard carton above a clear floor.",
+        "visible_objects": [
+          "gloved hands",
+          "long cardboard carton",
+          "foam padding",
+          "clear floor"
+        ],
+        "mismatches": [],
+        "human_review": "PENDING"
+      },
+      "human_approval": "PENDING",
+      "ai_generated": true,
+      "authentic_product_photograph": false
+    },
+    {
+      "id": "h2-04",
+      "section": "What belongs on the first inspection checklist?",
+      "preview": "h2-04.webp",
+      "bytes": 159732,
+      "original_sha256": "a4e2704da300541669c2fa33ca3c14df681aabe5269dfa620e38579cff98c7f2",
+      "seo_metadata": {
+        "title": "Checking the Contents of an Open Carton",
+        "alt": "Open carton containing foam inserts and sealed accessory bags beside a blank checklist",
+        "caption": "Compare separately packed items with the order before discarding the foam.",
+        "description": "Top-down unpacking scene showing a box with foam supports and small sealed accessory bags, plus a blank checklist, pen and nearby phone."
+      },
+      "machine_visual_review": {
+        "reviewer": "codex_image_vision_review",
+        "reviewed_at": "2026-11-13T00:59:36+00:00",
+        "observed_scene": "An open carton holds foam inserts and several sealed bags beside a blank checklist, pen and phone.",
+        "visible_objects": [
+          "open carton",
+          "foam inserts",
+          "sealed accessory bags",
+          "blank checklist",
+          "pen",
+          "phone"
+        ],
+        "mismatches": [],
+        "human_review": "PENDING"
+      },
+      "human_approval": "PENDING",
+      "ai_generated": true,
+      "authentic_product_photograph": false
+    },
+    {
+      "id": "h2-05",
+      "section": "What if something is missing or damaged?",
+      "preview": "h2-05.webp",
+      "bytes": 155800,
+      "original_sha256": "74f5ae707473d1e69eca1c2e3d61e1ecb2ad1e76cb4fc5d74a37b0e981ef780f",
+      "seo_metadata": {
+        "title": "Documenting Shipping Damage With a Camera",
+        "alt": "Smartphone photographing a scuffed cardboard carton beside foam fragments and an envelope",
+        "caption": "Keep clear photographs of visible shipping damage for the seller.",
+        "description": "Evidence-recording still life showing a phone aimed at a scuffed carton, with protective foam fragments and a blank envelope on the table."
+      },
+      "machine_visual_review": {
+        "reviewer": "codex_image_vision_review",
+        "reviewed_at": "2026-11-13T00:59:36+00:00",
+        "observed_scene": "A phone camera frames a scuffed, dented carton beside foam fragments and a blank envelope.",
+        "visible_objects": [
+          "phone",
+          "scuffed cardboard carton",
+          "foam fragments",
+          "blank envelope"
+        ],
+        "mismatches": [],
+        "human_review": "PENDING"
+      },
+      "human_approval": "PENDING",
+      "ai_generated": true,
+      "authentic_product_photograph": false
+    },
+    {
+      "id": "h2-06",
+      "section": "When should you clean and set up the doll?",
+      "preview": "h2-06.webp",
+      "bytes": 181140,
+      "original_sha256": "48c7eac6308b12079a6a37f9daa7f3c132978b43c5f2bace87e3a426a8201afb",
+      "seo_metadata": {
+        "title": "Organizing Basic Care Supplies Before Setup",
+        "alt": "Folded cloth, sponge, empty bowl and blank care booklet arranged beside a closed carton",
+        "caption": "Read the product instructions before choosing a cleaning method.",
+        "description": "Clean preparation table with a neutral folded cloth, soft sponge, dry bowl and opened blank booklet beside a closed shipping box and small plant."
+      },
+      "machine_visual_review": {
+        "reviewer": "codex_image_vision_review",
+        "reviewed_at": "2026-11-13T00:59:36+00:00",
+        "observed_scene": "A folded cloth, sponge, empty bowl and open blank booklet sit beside a closed cardboard box.",
+        "visible_objects": [
+          "folded cloth",
+          "sponge",
+          "empty bowl",
+          "blank booklet",
+          "closed cardboard box",
+          "plant"
+        ],
+        "mismatches": [],
+        "human_review": "PENDING"
+      },
+      "human_approval": "PENDING",
+      "ai_generated": true,
+      "authentic_product_photograph": false
+    }
+  ],
+  "human_approval": "PENDING",
+  "wordpress_publish_allowed": false
+}
