@@ -10,6 +10,8 @@ from .source import classify, evidence
 from .outline import section_plan, markdown_outline
 from .llm import prepare_prompt, write_openai
 from .rewrite_contract import CONTRACT_VERSION, validate_prepared_prompt
+from .fidelity import inspect_fidelity, review_sheet
+from .usage_policy import verified_source_article
 from .codex_cli import DEFAULT_MODEL, run_writing, summarize_usage
 from .review import check
 from .benchmark import scrape_qc_metrics, compare_draft
@@ -63,12 +65,23 @@ def write(job: dict, model: str | None, provider: str, target: int,
              "range": result["allowed_range"], "cache_hits": result["cache_hits"],
              "usage": summarize_usage(out), "local_final":
              str(out / "article-auto-final.md"),
-             "factual_review": "PENDING", "wordpress": "UNTOUCHED"}, indent=2))
+             "factual_review": "PENDING",
+             "source_fidelity_review": result["source_fidelity"]["status"],
+             "publish_ready": result["publish_ready"],
+             "wordpress": "UNTOUCHED"}, indent=2))
         return
     if provider == "openai":
         full_prompt, source_receipt = validate_prepared_prompt(job, out)
         draft, receipt = write_openai(full_prompt, model or "gpt-6.1-terra")
         receipt["source_contract"] = source_receipt
+        original = verified_source_article(job, out)
+        mapping = inspect_fidelity(original, draft, source_ref=job["source_url"])
+        write_json(out / "source-fidelity-report.json", mapping)
+        (out / "source-fidelity-review.md").write_text(
+            review_sheet(mapping), encoding="utf-8")
+        receipt["source_fidelity_status"] = mapping["status"]
+        receipt["publish_ready"] = False
+        receipt["release_gate"] = "OWNER_HUMAN_FIDELITY_REVIEW_REQUIRED"
         (out / "article-v1.md").write_text(draft + "\n", encoding="utf-8")
         write_json(out / "model-receipt.json", receipt)
         write_json(out / "review-v1.json", check(draft, job))
@@ -150,6 +163,39 @@ def media_export(job: dict):
     result = export_review_preview(job, article.read_text(encoding="utf-8"))
     print(json.dumps(result, indent=2))
 
+def fidelity(source_path: str, draft_path: str, report_path: str,
+             notes_path: str | None = None):
+    """Offline-only, source-to-draft traceability for any article or brand."""
+    source_file = resolved(source_path)
+    draft_file = resolved(draft_path)
+    output = resolved(report_path)
+    private_dir = (resolved(".runs")).resolve()
+    if not output.is_relative_to(private_dir):
+        raise ValueError("Fidelity report must remain in ignored .runs directory")
+    if not source_file.is_file() or not draft_file.is_file():
+        raise FileNotFoundError("Fidelity source and draft must be existing files")
+    if not source_file.is_relative_to(private_dir):
+        raise PermissionError("Original source must be in private ignored .runs")
+    notes = None
+    if notes_path:
+        p = resolved(notes_path)
+        if not p.is_relative_to(private_dir):
+            raise PermissionError("Reviewer notes must stay in private .runs")
+        notes = json.loads(p.read_text(encoding="utf-8"))
+        if not isinstance(notes, list):
+            raise ValueError("Reviewer notes must be a JSON array")
+    result = inspect_fidelity(
+        source_file.read_text(encoding="utf-8"),
+        draft_file.read_text(encoding="utf-8"),
+        source_ref=source_path, reviewer_notes=notes)
+    write_json(output, result)
+    review_path = output.with_suffix(".review.md")
+    review_path.write_text(review_sheet(result), encoding="utf-8")
+    print(json.dumps({"status": result["status"], "report": str(output),
+                      "manual_review_sheet": str(review_path),
+                      "summary": result["summary"],
+                      "caveat": result["metric_scope"]}, indent=2))
+
 def benchmark(job: dict):
     bench = scrape_qc_metrics()
     dest = outdir(job) / "benchmark.json"
@@ -175,8 +221,17 @@ def main(argv: list[str] | None = None) -> int:
             sp.add_argument("--force", action="store_true")
         if name in ("review", "quality", "media-plan"):
             sp.add_argument("--draft", required=True)
+    fv = sub.add_parser("fidelity", help="Offline full-article content mapping; no Codex")
+    fv.add_argument("--source", required=True)
+    fv.add_argument("--draft", required=True)
+    fv.add_argument("--report", required=True)
+    fv.add_argument("--notes", default=None,
+                    help="Optional human-reviewed source mapping JSON in private .runs")
     args = parser.parse_args(argv)
     try:
+        if args.command == "fidelity":
+            fidelity(args.source, args.draft, args.report, args.notes)
+            return 0
         job = read_job(args.job)
         if args.command in ("run", "pipeline"):
             run(job)

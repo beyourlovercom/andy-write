@@ -20,3 +20,25 @@ Rules:
 7. Save under gitignored .runs, never publish to WordPress or Notion without separate Owner authorization.
 
 Maturity: R3 Quality foundation. Deep citation span verification, image QA and comprehensive live link checks are future work.
+
+## V1.2 source-fidelity / content-retention audit
+
+Before accepting a rewriting candidate, run the independent local Python Fidelity
+check (andy_write.fidelity). For each original paragraph, record stable ID,
+source SHA-256, a possible output paragraph range, source-distinctive word
+overlap and manual review status. Keep short and heading-only source paragraphs
+in a separate numbered queue; do not silently exclude them.
+
+EXACT_TEXT_PRESENT means literal text, LEXICAL_CANDIDATE means review only,
+UNMAPPED_REVIEW means no match was proven, not necessarily omitted meaning.
+New numbers are source-check candidates, not evidence of fabricated facts.
+Never use an AI-detector percentage as a quality metric. Never claim human
+semantic approval based on deterministic matching.
+
+The writing pipeline now generates source-fidelity-report.json and a private
+source-fidelity-review.md automatically. The CLI also supports independent
+fidelity checks on any two existing local article files. Never use Codex CLI
+for QA, evidence matching or script execution. Owner notes must have rationale,
+source hashes and (for positive claims) a real exact target quotation.
+Unsafe, universalized or SKU-inapplicable original advice may be intentionally
+omitted if documented; literal word copying is not the quality goal.

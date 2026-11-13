@@ -59,3 +59,18 @@ R3 真实配图验收与预览：
 - [R3 媒体禁令与历史素材审核](docs/r3-media-operations.md)
 
 Owner 约束详见 [P0 Codex 文章改写专用与媒体生成禁令](docs/owner-policy-2026-11-13.md)。
+
+
+## V1.2 跨文章忠实度验证（本地 Python，不调用 Codex）
+
+每次改写完成，自动生成逐段忠实度映射报告与人工审核清单。
+也可以对已有文章运行独立对照：
+
+    python3 -m andy_write fidelity --source .runs/pairdoll-unboxing/source-original.notion.md --draft examples/output/pairdoll-unboxing-editor-quality-v2.md --report .runs/pairdoll-unboxing/fidelity-review.json
+
+机器输出是精确文本、关键词匹配候选及待确认段落，不是语义保留率。
+原文短段落和标题也全部编号，不再无声忽略。人工审核的合理删减
+（尤其过时或不安全的原文建议）允许记录理由，不能通过重复堆词实现高分。
+
+[真实双文章 UAT](docs/v1.2-cross-article-fidelity-uat-2026-11-13.md) ·
+[Skill 操作与人工审核规则](docs/v1.2-fidelity-operations.md)

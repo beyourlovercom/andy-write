@@ -18,6 +18,7 @@ from .io import ROOT, hashtext, now, outdir, resolved, write_json
 from .review import check
 from .usage_policy import permit_codex_stage, verified_source_article
 from .rewrite_contract import validate_prepared_prompt
+from .fidelity import inspect_fidelity, review_sheet
 from .content_quality import (audit, review_targets, split_sections,
     parse_rewritten_sections, edit_sections, normalize_intro)
 
@@ -387,6 +388,13 @@ def run_writing(
     count = word_count(article)
     within = low <= count <= high
     (directory / "article-auto-final.md").write_text(article + "\n", encoding="utf-8")
+    # Automatic offline fidelity mapping is independent of Codex and is NEVER
+    # allowed to claim human semantic or factual approval.
+    actual_source = verified_source_article(job, directory)
+    fidelity = inspect_fidelity(actual_source, article, source_ref=job["source_url"])
+    write_json(directory / "source-fidelity-report.json", fidelity)
+    (directory / "source-fidelity-review.md").write_text(
+        review_sheet(fidelity), encoding="utf-8")
     content_pass = not after or after["status"] == "RULE_CHECK_PASS"
     rule_pass = final_quality["status"] == "RULE_CHECK_PASS"
     status = "RULE_CHECK_PASS" if within and rule_pass and content_pass else "REVIEW_REQUIRED"
@@ -394,7 +402,15 @@ def run_writing(
               "timestamp": now(), "target_words": target, "allowed_range": [low, high],
               "actual_words": count, "within_word_range": within,
               "quality": final_quality, "content_quality": after,
-              "source_contract": source_receipt, "status": status,
+              "source_contract": source_receipt,
+              "source_fidelity": {
+                  "status": fidelity["status"],
+                  "summary": fidelity["summary"],
+                  "human_review": "PENDING",
+              },
+              "publish_ready": False,
+              "release_gate": "OWNER_HUMAN_FIDELITY_REVIEW_REQUIRED",
+              "status": status,
               "last_stage": last_stage, "cache_hits": cache_hits,
               "wordpress_status": "UNTOUCHED", "human_factual_approval": "PENDING"}
     write_json(directory / "codex-writing-result.json", report)
