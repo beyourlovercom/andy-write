@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from .io import read_job, outdir, resolved, write_json, hashtext, now
+from .io import ROOT, read_job, outdir, resolved, write_json, hashtext, now
 from .research import research
 from .cache import cached_research
 from .source import classify, evidence
@@ -169,7 +169,7 @@ def fidelity(source_path: str, draft_path: str, report_path: str,
     source_file = resolved(source_path)
     draft_file = resolved(draft_path)
     output = resolved(report_path)
-    private_dir = (resolved(".runs")).resolve()
+    private_dir = (ROOT / ".runs").resolve()
     if not output.is_relative_to(private_dir):
         raise ValueError("Fidelity report must remain in ignored .runs directory")
     if not source_file.is_file() or not draft_file.is_file():
