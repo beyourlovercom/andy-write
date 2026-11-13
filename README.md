@@ -1,5 +1,14 @@
 # Andy Write Skills V1.0 — R0–R2 MVP
 
+**Owner P0 — 最高研发规则（2026-11-13）：** [AGENTS.md](AGENTS.md) / [OWNER_RULES.md](OWNER_RULES.md)
+
+- **SKILL_FIRST / Skill 优先：** 修复必须沉淀到通用 Skill 和测试，不能只改一篇文章。
+- **EVIDENCE_BASED / 数据驱动：** 以真实原文、QC 基准和可复现指标验收，不把 AI 检测率当作内容质量指标。
+- **VERSION_ROLLBACK / 版本可回退：** 每次升级必须经过 PR、自动测试、UAT、回退记录和 Owner 合并授权。
+
+Codex CLI 仅限改写用户提供的完整文章；所有图片、视频生成均禁用。
+
+
 独立、可版本化的 AI 写作 Skill 系统。**本仓库不运行 WordPress 发布动作**，也不向线上站点写入任何内容。
 
 ## 已实现范围
