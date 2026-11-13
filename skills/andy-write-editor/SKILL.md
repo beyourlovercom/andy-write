@@ -47,3 +47,19 @@ with the private passage mapping sheet before any release approval.
 
 Codex CLI is limited to the article rewrite/edit tasks; all other QC,
 research, planning, code, publication and media generation are forbidden.
+
+## V1.2.1 human annotations and source-supported fact editing
+
+Use the frozen private twelve-item goldset and real original/draft pair.
+Record real reviewer, actual source quote, substantive rationale and the
+difference between meaning retained, qualified rewrite, intentionally
+removed unsafe content and lost useful information. Do not substitute
+AI-generated labels for a real human reference.
+
+For each important factual sentence, use the private claim-evidence
+worksheet and examine the actual source paragraph in full context.
+Only mark a source relevant after checking the SPECIFIC factual claim
+is really supported. Official government web pages cannot validate
+specific toy material, cleaning, temperature or water-resistance ratings
+without model-appropriate manufacturer support. Leave unproven claims
+as NEEDS_REVIEW; never invent a citation. Codex remains rewriting only.

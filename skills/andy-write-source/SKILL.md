@@ -39,3 +39,17 @@ Public source dates must distinguish original 2025 publication from a later
 numerical, medical, IP-rating, cleaning/compatibility, materials and safety
 claims, the evidence must specifically support the exact statement, or
 it stays pending human review.
+
+## V1.2.1 source URL is not evidence of claim truth
+
+Separate Owner source (rewriting provenance) from an independently
+retrieved institutional or manufacturer paragraph. Require exact
+retrieval channel, HTTPS URL, timestamp and hashed actual paragraph;
+a page title, source domain or HTTP 200 does not entail the article's
+claim. Flag source-topic mismatch, negation and numerical contradictions
+for human review. A generic FTC/CDC article is not a product care manual.
+
+The institutional evidence fetch script is read-only and bounded, with
+private .runs storage. Log 403/404 honestly, never invent a successful
+fetch or substitute a source from a different topic. No Codex for
+research, source classification or factual QA.

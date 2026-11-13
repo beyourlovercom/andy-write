@@ -94,9 +94,12 @@ class TestR2Codex(unittest.TestCase):
         self.assertEqual(use["calls_completed"], 2)
         self.assertEqual(first["source_fidelity"]["status"], "HUMAN_REVIEW_REQUIRED")
         self.assertFalse(first["publish_ready"])
-        self.assertEqual(first["release_gate"], "OWNER_HUMAN_FIDELITY_REVIEW_REQUIRED")
+        self.assertEqual(first["release_gate"], "OWNER_HUMAN_FIDELITY_AND_FACT_REVIEW_REQUIRED")
         self.assertTrue((self.directory/"source-fidelity-report.json").is_file())
         self.assertTrue((self.directory/"source-fidelity-review.md").is_file())
+        self.assertTrue((self.directory/"claim-evidence-review.json").is_file())
+        self.assertEqual(first["claim_evidence"]["status"],
+                         "HUMAN_FACT_EVIDENCE_REVIEW_REQUIRED")
         self.assertEqual(use["totals"]["input_tokens"], 2022)
         self.assertEqual(use["totals"]["cached_input_tokens"], 1000)
         self.assertEqual(use["totals"]["output_tokens"], 210)

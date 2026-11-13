@@ -13,6 +13,8 @@ from .rewrite_contract import CONTRACT_VERSION, validate_prepared_prompt
 from .fidelity import inspect_fidelity, review_sheet
 from .qc_reverse import html_qc_profile, markdown_qc_profile, compare_structure, skill_gap_actions
 from .qc_goldset import write_goldset
+from .qc_calibration import calibrate
+from .claim_evidence import trace_claims, apply_human_claim_reviews, claim_review_sheet
 from .usage_policy import verified_source_article
 from .codex_cli import DEFAULT_MODEL, run_writing, summarize_usage
 from .review import check
@@ -81,9 +83,18 @@ def write(job: dict, model: str | None, provider: str, target: int,
         write_json(out / "source-fidelity-report.json", mapping)
         (out / "source-fidelity-review.md").write_text(
             review_sheet(mapping), encoding="utf-8")
+        evidence_path = out / "approved-evidence-snapshots.json"
+        public_sources = (json.loads(evidence_path.read_text(encoding="utf-8"))
+                          if evidence_path.is_file() else [])
+        fact_trace = trace_claims(draft, original, public_sources)
+        write_json(out / "claim-evidence-review.json", fact_trace)
+        (out / "claim-evidence-review.md").write_text(
+            claim_review_sheet(fact_trace), encoding="utf-8")
+        receipt["claim_evidence_status"] = fact_trace["status"]
+        receipt["claim_evidence_summary"] = fact_trace["summary"]
         receipt["source_fidelity_status"] = mapping["status"]
         receipt["publish_ready"] = False
-        receipt["release_gate"] = "OWNER_HUMAN_FIDELITY_REVIEW_REQUIRED"
+        receipt["release_gate"] = "OWNER_HUMAN_FIDELITY_AND_FACT_REVIEW_REQUIRED"
         (out / "article-v1.md").write_text(draft + "\n", encoding="utf-8")
         write_json(out / "model-receipt.json", receipt)
         write_json(out / "review-v1.json", check(draft, job))
@@ -115,17 +126,39 @@ def quality(job: dict, path: str):
     body = article_path.read_text(encoding="utf-8")
     report = audit(body, job, pack, catalog)
     static = check(body, job)
-    status = "REVIEW_REQUIRED" if report["issues"] or static["issues"] else "RULE_CHECK_PASS"
+    # Quality CLI is an actual release-oriented quality report, unlike a
+    # syntactic static PASS. All significant claims need independent review.
+    try:
+        original = verified_source_article(job, out)
+    except (FileNotFoundError, ValueError, PermissionError, RuntimeError):
+        original = None
+    evid_file = out / "approved-evidence-snapshots.json"
+    external = (json.loads(evid_file.read_text(encoding="utf-8"))
+                if evid_file.is_file() else [])
+    facts = trace_claims(body, original, external) if original else None
+    if facts:
+        write_json(out / "claim-evidence-review.json", facts)
+        (out / "claim-evidence-review.md").write_text(
+            claim_review_sheet(facts), encoding="utf-8")
+    # No automatic factual or semantic pass even when static checks pass.
+    status = "REVIEW_REQUIRED"
     output = out / ("quality-report-" + article_path.stem + ".json")
     write_json(output, {"job_id": job["job_id"], "path": str(article_path),
                        "status": status, "content": report, "static": static,
-                       "caveat": "Editorial heuristics only; no AI-authorship prediction or fact approval."})
+                       "fact_claims": facts["summary"] if facts else None,
+                       "fact_review":"PENDING" if facts else "SOURCE_GATE_MISSING",
+                       "publish_ready":False,
+                       "caveat": "Static structural QA cannot establish factual approval, "
+                       "semantic fidelity or human authorship."})
     print(json.dumps({
         "status": status, "report": str(output),
         "content_issues": [(v["code"], v.get("heading")) for v in report["issues"]],
         "source_specificity": [report["source_details_present"], report["eligible_source_detail_count"]],
         "links": {"internal": len(report["links"]["internal"]), "external": len(report["links"]["external"])},
-        "introduction": report["introduction"]
+        "introduction": report["introduction"],
+        "important_fact_claims": facts["summary"]["important_claims_total"] if facts else None,
+        "human_fact_review": "PENDING" if facts else "SOURCE_GATE_MISSING",
+        "publish_ready": False
     }, indent=2))
 
 def media_plan(job: dict, path: str):
@@ -197,6 +230,63 @@ def fidelity(source_path: str, draft_path: str, report_path: str,
                       "manual_review_sheet": str(review_path),
                       "summary": result["summary"],
                       "caveat": result["metric_scope"]}, indent=2))
+
+def qc_calibrate(packet_path:str,source_path:str,draft_path:str,
+                 annotations_path:str|None,report_path:str):
+    private=(ROOT/".runs").resolve()
+    inputs=[resolved(packet_path),resolved(source_path),resolved(draft_path),
+            resolved(report_path)]
+    if annotations_path:
+        inputs.append(resolved(annotations_path))
+    if any(not p.is_relative_to(private) for p in inputs):
+        raise PermissionError("Human calibration data and outputs stay in private .runs")
+    if any(not p.is_file() for p in inputs[:3]):
+        raise FileNotFoundError("Frozen packet, original and article draft required")
+    annotations=(json.loads(resolved(annotations_path).read_text(encoding="utf-8"))
+                 if annotations_path else None)
+    result=calibrate(
+        json.loads(resolved(packet_path).read_text(encoding="utf-8")),
+        resolved(source_path).read_text(encoding="utf-8"),
+        resolved(draft_path).read_text(encoding="utf-8"),
+        annotations)
+    write_json(resolved(report_path),result)
+    print(json.dumps({k:v for k,v in result.items()
+                      if k in ("status","sample_count","human_labels_present",
+                               "calibration_status","owner_approval",
+                               "baseline_confusion","calibrated_threshold")},
+                     indent=2))
+
+
+def qc_claims(source_path:str,draft_path:str,sources_path:str|None,
+              report_path:str,notes_path:str|None=None):
+    private=(ROOT/".runs").resolve()
+    required=[resolved(source_path),resolved(report_path)]
+    if sources_path:
+        required.append(resolved(sources_path))
+    if notes_path:
+        required.append(resolved(notes_path))
+    if any(not p.is_relative_to(private) for p in required):
+        raise PermissionError("Source, external evidence and claim report stay in private .runs")
+    draft=resolved(draft_path)
+    if not resolved(source_path).is_file() or not draft.is_file():
+        raise FileNotFoundError("Existing Owner original and rewritten article required")
+    external=(json.loads(resolved(sources_path).read_text(encoding="utf-8"))
+              if sources_path else [])
+    result=trace_claims(
+        draft.read_text(encoding="utf-8"),
+        resolved(source_path).read_text(encoding="utf-8"),external)
+    write_json(resolved(report_path),result)
+    resolved(report_path).with_suffix(".review.md").write_text(
+        claim_review_sheet(result),encoding="utf-8")
+    if notes_path:
+        notes=json.loads(resolved(notes_path).read_text(encoding="utf-8"))
+        review=apply_human_claim_reviews(result,external,notes)
+        write_json(resolved(report_path).with_suffix(".human-review.json"),review)
+    print(json.dumps({"status":result["status"],
+                      "report":str(resolved(report_path)),
+                      "summary":result["summary"],
+                      "publish_ready":result["publish_ready"]},indent=2))
+
 
 def qc_goldset(source_path:str,draft_path:str,report_path:str,size:int):
     from .io import ROOT
@@ -284,6 +374,20 @@ def main(argv: list[str] | None = None) -> int:
             sp.add_argument("--force", action="store_true")
         if name in ("review", "quality", "media-plan"):
             sp.add_argument("--draft", required=True)
+    ca = sub.add_parser("qc-calibrate", help="Calibrate against actual human labels; never invent them")
+    ca.add_argument("--packet",required=True)
+    ca.add_argument("--source",required=True)
+    ca.add_argument("--draft",required=True)
+    ca.add_argument("--annotations",default=None)
+    ca.add_argument("--report",required=True)
+    claims = sub.add_parser("qc-claims", help="Trace important claims to exact retrieved passages, no Codex")
+    claims.add_argument("--source",required=True)
+    claims.add_argument("--draft",required=True)
+    claims.add_argument("--sources",default=None,
+                        help="Optional private JSON list of real fetched public sources")
+    claims.add_argument("--report",required=True)
+    claims.add_argument("--notes",default=None,
+                        help="Optional actual human citation review decisions")
     gs = sub.add_parser("qc-goldset", help="Private human annotation packet, no Codex")
     gs.add_argument("--source",required=True)
     gs.add_argument("--draft",required=True)
@@ -303,6 +407,12 @@ def main(argv: list[str] | None = None) -> int:
                     help="Optional human-reviewed source mapping JSON in private .runs")
     args = parser.parse_args(argv)
     try:
+        if args.command == "qc-calibrate":
+            qc_calibrate(args.packet,args.source,args.draft,args.annotations,args.report)
+            return 0
+        if args.command == "qc-claims":
+            qc_claims(args.source,args.draft,args.sources,args.report,args.notes)
+            return 0
         if args.command == "qc-goldset":
             qc_goldset(args.source,args.draft,args.report,args.size)
             return 0

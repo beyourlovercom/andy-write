@@ -19,6 +19,7 @@ from .review import check
 from .usage_policy import permit_codex_stage, verified_source_article
 from .rewrite_contract import validate_prepared_prompt
 from .fidelity import inspect_fidelity, review_sheet
+from .claim_evidence import trace_claims, claim_review_sheet
 from .content_quality import (audit, review_targets, split_sections,
     parse_rewritten_sections, edit_sections, normalize_intro)
 
@@ -483,6 +484,13 @@ def run_writing(
     write_json(directory / "source-fidelity-report.json", fidelity)
     (directory / "source-fidelity-review.md").write_text(
         review_sheet(fidelity), encoding="utf-8")
+    evidence_path = directory / "approved-evidence-snapshots.json"
+    public_sources = (json.loads(evidence_path.read_text(encoding="utf-8"))
+                      if evidence_path.is_file() else [])
+    claims = trace_claims(article, actual_source, public_sources)
+    write_json(directory / "claim-evidence-review.json", claims)
+    (directory / "claim-evidence-review.md").write_text(
+        claim_review_sheet(claims), encoding="utf-8")
     content_pass = not after or after["status"] == "RULE_CHECK_PASS"
     rule_pass = final_quality["status"] == "RULE_CHECK_PASS"
     status = "RULE_CHECK_PASS" if within and rule_pass and content_pass else "REVIEW_REQUIRED"
@@ -496,8 +504,13 @@ def run_writing(
                   "summary": fidelity["summary"],
                   "human_review": "PENDING",
               },
+              "claim_evidence": {
+                  "status": claims["status"],
+                  "summary": claims["summary"],
+                  "human_fact_check": "PENDING",
+              },
               "publish_ready": False,
-              "release_gate": "OWNER_HUMAN_FIDELITY_REVIEW_REQUIRED",
+              "release_gate": "OWNER_HUMAN_FIDELITY_AND_FACT_REVIEW_REQUIRED",
               "status": status,
               "last_stage": last_stage, "cache_hits": cache_hits,
               "wordpress_status": "UNTOUCHED", "human_factual_approval": "PENDING"}

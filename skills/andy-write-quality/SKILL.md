@@ -64,3 +64,24 @@ Outputs are HUMAN_REVIEW_REQUIRED when facts/semantic retention are uncertain.
 
 Owner P0: Codex CLI ONLY rewrites a complete Owner-provided original; this
 reverse-QC skill never invokes Codex. All image/video generation prohibited.
+
+## V1.2.1 HUMAN-LABELED retention and evidence relevance
+
+The frozen 12-case source-alignment goldset remains PENDING until a real
+independent editor supplies actual labels and rationales. AI suggestions are
+not human ground truth. There are 10 unmapped and 2 short items and zero
+positive machine matches, so this corpus cannot by itself calibrate
+positive-match precision. Preserve source/draft hashes, actual quote,
+reviewer declaration and Owner acceptance gate; thresholds stay unchanged.
+
+For every important actionable, numerical, safety/material, compatibility
+or universal assertion, find the actual source paragraph with retrieval
+channel, URL and hash. Match claims to evidence meaning, not a famous
+domain or HTTP 200. Highlight negation/number differences. Manufacturer
+and model guidance is required for product-specific materials and care.
+Never auto-mark semantic entailment or factual approval.
+
+Every Quality report remains REVIEW_REQUIRED and publish_ready false
+until actual independent evidence/human sign-off. The raw content and
+review evidence are private, all images/videos are not generated, and
+Codex cannot be used for QA.

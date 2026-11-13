@@ -187,6 +187,7 @@ class TestTargetedChapterWorkflow(unittest.TestCase):
             self.assertEqual(output["status"],"RULE_CHECK_PASS")
             self.assertEqual(output["source_fidelity"]["status"],"HUMAN_REVIEW_REQUIRED")
             self.assertTrue((dest/"source-fidelity-review.md").exists())
+            self.assertTrue((dest/"claim-evidence-review.json").exists())
             self.assertIn(links[0],after)
             self.assertIn(links[1],after)
             before_sections={s["heading"]:s["body"] for s in all_sections}
