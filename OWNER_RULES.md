@@ -28,7 +28,7 @@ Develop on a branch and submit a GitHub PR. Complete automated tests and record 
 
 ## Other existing Owner P0 restrictions, retained
 
-Codex CLI may ONLY rewrite a full preexisting user-provided article. No Codex for coding, research, outlines, QA, media, website operations or other tasks. Image generation and video generation are prohibited with every provider, including Codex built-ins. Only passive review of historical/user-provided media is permitted.
+Codex CLI may ONLY rewrite a full preexisting user-provided article, with verifiable provenance, source SHA-256 and read-only tool-free execution. No Codex for coding, research, outlines, QA, media, website operations or other tasks. Image generation and video generation are prohibited with every provider, including Codex built-ins. Only passive review of historical/user-provided media is permitted.
 
 Production publishing and GitHub main merges require separate Owner authorization; do not disclose credentials or commit source originals. A heuristic QA PASS does not equal verified facts.
 

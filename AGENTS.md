@@ -10,7 +10,7 @@
 
 ## Other binding Owner P0 safety restrictions
 
-- Codex CLI may ONLY rewrite an existing complete user-supplied article, including its English editing or chapter-level revision. Codex is forbidden for any research, classification, outlines, QA, code, deployment, Notion, WordPress, image/video work or any other task.
+- Codex CLI may ONLY rewrite an existing complete user-supplied article, including its English editing or chapter-level revision. Every rewrite requires a substantive original source, provenance and a matching recorded source SHA-256, and must be read-only and tool-free. Codex is forbidden for any research, classification, outlines, QA, code, deployment, Notion, WordPress, image/video work or any other task.
 - ALL image generation and video generation are forbidden, regardless of provider or workaround. Prior images are only historical assets available for passive review.
 - No WordPress production writes or GitHub main merges without separate explicit Owner approval.
 - Do not commit secrets, customer data, original supplied articles, raw events, or ignored run directories.
