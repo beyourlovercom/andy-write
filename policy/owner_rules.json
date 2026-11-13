@@ -1,0 +1,44 @@
+{
+  "version": "owner-p0-v1.0.0",
+  "effective_date": "2026-11-13",
+  "priority": "OWNER_P0",
+  "scope": "andy-write",
+  "principles": [
+    {
+      "id": "SKILL_FIRST",
+      "label": "Skill 优先",
+      "requires": [
+        "reusable_skill_change",
+        "regression_tests",
+        "cross_article_applicability"
+      ]
+    },
+    {
+      "id": "EVIDENCE_BASED",
+      "label": "数据驱动",
+      "requires": [
+        "real_reference_article",
+        "qc_baseline",
+        "measured_before_after"
+      ],
+      "ai_detector_percentage_as_acceptance": false
+    },
+    {
+      "id": "VERSION_ROLLBACK",
+      "label": "版本可回退",
+      "requires": [
+        "github_pr",
+        "automated_tests",
+        "uat_acceptance",
+        "rollback_ref",
+        "owner_merge_approval"
+      ]
+    }
+  ],
+  "codex_cli_allowed_purpose": "rewrite_existing_user_supplied_article_only",
+  "codex_cli_other_purposes_allowed": false,
+  "image_generation_enabled": false,
+  "video_generation_enabled": false,
+  "auto_merge_allowed": false,
+  "production_auto_publish_allowed": false
+}
