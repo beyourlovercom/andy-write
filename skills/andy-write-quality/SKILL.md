@@ -99,3 +99,16 @@ requires the actual retrieved primary manufacturer source, exact model,
 matched official domain, official manual/spec document and literal quoted
 source passage. A Boolean and generic government link are never enough.
 Owner must still check true manufacturer authority. Codex is forbidden for QA.
+
+## V1.2.3 real human evidence before independent validation
+
+Do not adjust semantic matcher thresholds until two independent human
+reviewers provide complete, original-hash-verified judgments. The current
+Torso goldset has 0/12 human labels and zero machine positives. Never claim
+a precision/recall estimate from unfinished annotations.
+
+A private important-claim evidence queue prioritizes all 32 HIGH factual
+checks (52 total) without assuming facts are true. Missing manufacturer
+SKU/model must be explicit. Later run an OTHER-INDUSTRY holdout frozen by
+SHA-256 only after real labels and an explicit Owner unseal decision. Never
+use a blind holdout for threshold or template design.

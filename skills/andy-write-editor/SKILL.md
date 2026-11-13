@@ -72,3 +72,13 @@ the actual target excerpt where retention is asserted. Export JSON locally.
 Independent reviewers submit separate reviews; qc-agreement surfaces
 disagreements for Owner arbitration. Do not count AI proposed labels as
 human truth, and do not use Codex CLI for QA.
+
+## V1.2.3 human-only R4 → R5 → R6
+
+Actual reviewers open private full source/draft workbenches and independently
+submit labels, reasons and literal target evidence. The reviewer agreement
+tool requires real two-person decisions; AI labels are not ground truth.
+Then review material/safety claims from the private evidence queue, each
+with real primary manufacturer/manual sources where appropriate.
+Do not rewrite or score a sealed agriculture holdout until these actual
+human quality gates are met and Owner separately authorizes release.

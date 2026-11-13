@@ -61,3 +61,13 @@ manufacturer_primary source with matching manufacturer_domain and product_model
 and an official_product_manual or official_model_specifications type.
 A human review must cite a literal paragraph and verify the same model.
 General public agency advice is not a substitute for a model's manual.
+
+## V1.2.3 source/model and blind-holdout identity
+
+A reference mentioning TPE or silicone does NOT identify a specific maker,
+manual or product model. Leave facts needing model-specific care source
+PENDING until the true manufacturer and exact document are established.
+
+An unrelated Owner team article can be byte/hash sealed as an unseen
+test source. Do not inspect it for development, turn its paragraphs into
+examples or use it for training/threshold changes before evaluation gate.

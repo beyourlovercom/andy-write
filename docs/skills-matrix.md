@@ -26,3 +26,7 @@ Frozen 12 human source-alignment cases remain UNLABELED: 10 unmapped, 2 short, z
 ## V1.2.2 offline human labeling
 
 Two real private twelve-case source-to-draft review workbenches, agreement diagnostics for two actual distinct reviewers, exact source hash gating, and strict model-specific manufacturer primary evidence records. Human annotations remain 0/24; no factual/semantic approval. See docs/v1.2.2-human-review-roadmap-2026-11-13.md.
+
+## V1.2.3 sealed blind workflow
+
+Human labels remain 0/12. The private source-claim queue has 52 pending claims, 32 HIGH, without a specific product model. A never-used agricultural manuscript from the team's Drive is SHA-sealed for a later independent holdout; no quality threshold tuning or model rewrite is allowed until real human labels arrive. See docs/v1.2.3-r4-r5-r6-sequenced-uat-2026-11-13.md.

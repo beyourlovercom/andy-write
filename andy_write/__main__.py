@@ -16,6 +16,8 @@ from .qc_goldset import write_goldset
 from .qc_calibration import calibrate, reviewer_agreement
 from .qc_review_workbench import export_workbench
 from .claim_evidence import trace_claims, apply_human_claim_reviews, claim_review_sheet
+from .qc_evidence_queue import export_queue
+from .qc_blind import verify_private_holdout
 from .usage_policy import verified_source_article
 from .codex_cli import DEFAULT_MODEL, run_writing, summarize_usage
 from .review import check
@@ -246,6 +248,27 @@ def qc_workbench(packet_path:str, source_path:str, draft_path:str,
                             draft.read_text(encoding="utf-8"),out)
     print(json.dumps(result,indent=2))
 
+def qc_blind(manifest_path:str,source_path:str,out_path:str,
+             calibration_path:str|None=None,agreement_path:str|None=None):
+    receipt=verify_private_holdout(
+        resolved(manifest_path),resolved(source_path),resolved(out_path),
+        resolved(calibration_path) if calibration_path else None,
+        resolved(agreement_path) if agreement_path else None)
+    print(json.dumps(receipt,indent=2,ensure_ascii=False))
+
+
+def qc_evidence_queue(report_path:str,output_path:str,model:str|None=None):
+    private=(ROOT/".runs").resolve()
+    report=resolved(report_path)
+    output=resolved(output_path)
+    if not report.is_relative_to(private) or not output.is_relative_to(private):
+        raise PermissionError("Evidence worklist requires a private source and output")
+    if not report.is_file():
+        raise FileNotFoundError("Real previously audited claim report required")
+    receipt=export_queue(json.loads(report.read_text(encoding="utf-8")),
+                         output,product_model=model)
+    print(json.dumps(receipt,indent=2,ensure_ascii=False))
+
 def qc_agreement(packet_path:str,source_path:str,draft_path:str,
                  review_a:str|None,review_b:str|None,report_path:str):
     private=(ROOT/".runs").resolve()
@@ -413,6 +436,16 @@ def main(argv: list[str] | None = None) -> int:
     wb.add_argument("--source",required=True)
     wb.add_argument("--draft",required=True)
     wb.add_argument("--out",required=True)
+    blind = sub.add_parser("qc-blind-check", help="Validate sealed unseen holdout; no model call")
+    blind.add_argument("--manifest",required=True)
+    blind.add_argument("--source",required=True)
+    blind.add_argument("--report",required=True)
+    blind.add_argument("--calibration",default=None)
+    blind.add_argument("--agreement",default=None)
+    queue = sub.add_parser("qc-evidence-queue", help="Prioritize human verification of real claims")
+    queue.add_argument("--report",required=True)
+    queue.add_argument("--out",required=True)
+    queue.add_argument("--model",default=None,help="Optional verified real product model")
     agreement = sub.add_parser("qc-agreement", help="Check two independent human reviewers; no auto Owner PASS")
     agreement.add_argument("--packet",required=True)
     agreement.add_argument("--source",required=True)
@@ -455,6 +488,13 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.command == "qc-workbench":
             qc_workbench(args.packet,args.source,args.draft,args.out)
+            return 0
+        if args.command == "qc-blind-check":
+            qc_blind(args.manifest,args.source,args.report,
+                     args.calibration,args.agreement)
+            return 0
+        if args.command == "qc-evidence-queue":
+            qc_evidence_queue(args.report,args.out,args.model)
             return 0
         if args.command == "qc-agreement":
             qc_agreement(args.packet,args.source,args.draft,
