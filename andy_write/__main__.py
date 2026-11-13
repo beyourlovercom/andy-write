@@ -14,6 +14,9 @@ from .review import check
 from .benchmark import scrape_qc_metrics, compare_draft
 from .content_quality import audit
 from .media import plan_media, verify_media_manifest
+from .media_workflow import import_observations, review_ready
+from .media_export import export_review_preview
+from .imagegen_runner import run_imagegen
 
 def run(job: dict):
     out = outdir(job)
@@ -111,13 +114,48 @@ def media_plan(job: dict, path: str):
     article_path = resolved(path)
     if not article_path.is_file():
         raise FileNotFoundError(str(article_path))
-    manifest = plan_media(job, article_path.read_text(encoding="utf-8"))
     out = outdir(job) / "media-manifest.json"
+    if out.is_file():
+        old = json.loads(out.read_text(encoding="utf-8"))
+        if any(asset.get("status") == "vision_review_pass"
+               for asset in old.get("assets", [])):
+            raise RuntimeError("Existing generated media cannot be overwritten by media-plan")
+    manifest = plan_media(job, article_path.read_text(encoding="utf-8"))
     write_json(out, manifest)
     validated = verify_media_manifest(manifest)
     print(json.dumps({"file": str(out), "stage": manifest["stage"],
                       "planned": len(manifest["assets"]),
                       "verified": 0, "publish_ready": validated["status"] == "READY"}, indent=2))
+
+def media_import(job: dict):
+    out = outdir(job)
+    obs = out / "media" / "visual-observations.json"
+    if not obs.is_file():
+        raise RuntimeError("Image visual observations not found; no images marked as passed")
+    article = out / "article-auto-final.md"
+    if not article.is_file():
+        raise RuntimeError("Approved local article candidate missing")
+    observations = json.loads(obs.read_text(encoding="utf-8"))
+    result = import_observations(job, article.read_text(encoding="utf-8"), observations)
+    print(json.dumps(result, indent=2))
+
+def media_export(job: dict):
+    out = outdir(job)
+    article = out / "article-auto-final.md"
+    if not article.is_file():
+        raise RuntimeError("Local article candidate missing")
+    result = export_review_preview(job, article.read_text(encoding="utf-8"))
+    print(json.dumps(result, indent=2))
+
+def media_generate(job: dict):
+    out = outdir(job)
+    article = out / "article-auto-final.md"
+    if not article.is_file():
+        raise RuntimeError("Local article candidate missing")
+    result = run_imagegen(job, article.read_text(encoding="utf-8"))
+    print(json.dumps(result, indent=2))
+    if result["status"] == "CACHE_HIT":
+        print("Existing images reused. Run media-import and media-export for review.")
 
 def benchmark(job: dict):
     bench = scrape_qc_metrics()
@@ -132,7 +170,7 @@ def benchmark(job: dict):
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Andy Write V1.0 R0–R2")
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("run", "write", "pipeline", "usage", "review", "quality", "media-plan", "benchmark"):
+    for name in ("run", "write", "pipeline", "usage", "review", "quality", "media-plan", "media-import", "media-export", "media-generate", "benchmark"):
         sp = sub.add_parser(name)
         sp.add_argument("--job", required=True)
         if name in ("write", "pipeline"):
@@ -158,6 +196,12 @@ def main(argv: list[str] | None = None) -> int:
             quality(job, args.draft)
         elif args.command == "media-plan":
             media_plan(job, args.draft)
+        elif args.command == "media-import":
+            media_import(job)
+        elif args.command == "media-export":
+            media_export(job)
+        elif args.command == "media-generate":
+            media_generate(job)
         elif args.command == "usage":
             print(json.dumps(summarize_usage(outdir(job)), indent=2))
         elif args.command == "benchmark":
