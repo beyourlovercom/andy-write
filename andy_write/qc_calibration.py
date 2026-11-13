@@ -192,3 +192,67 @@ def calibrate(packet:dict, source:str, draft:str,
     result["calibration_status"]="EXPLORATORY_ONLY_NEEDS_INDEPENDENT_HOLDOUT"
     result["status"]="OWNER_REVIEW_OF_EXPLORATORY_CALIBRATION_REQUIRED"
     return result
+
+def reviewer_agreement(packet:dict,source:str,draft:str,
+                       first:list[dict]|None,second:list[dict]|None)->dict:
+    """Independent double-blind labels and Cohen's kappa; no auto Owner approval."""
+    cases=validate_packet(packet,source,draft)
+    base={
+      "contract":"andy-write-independent-reviewer-agreement-v1.2.2",
+      "source_sha256":hashtext(source),"draft_sha256":hashtext(draft),
+      "sample_count":len(cases),
+      "first_reviewer_verified_count":0,
+      "second_reviewer_verified_count":0,
+      "exact_agreement_percent":None,
+      "cohens_kappa":None,
+      "disagreement_ids":[],
+      "owner_approval":"PENDING",
+      "status":"TWO_INDEPENDENT_HUMAN_REVIEWS_REQUIRED"
+    }
+    if first is None or second is None:
+        return base
+    if not isinstance(first,list) or not isinstance(second,list):
+        raise ValueError("Each reviewer must supply 12 separate human notes")
+    if len(first)!=len(cases) or len(second)!=len(cases):
+        raise ValueError("Two complete 12-item reviewer reports required")
+    canonical={x["source_id"]:x for x in cases}
+    def validated(notes:list[dict])->dict:
+        output={}
+        for record in notes:
+            if not isinstance(record,dict):
+                raise ValueError("Invalid reviewer annotation")
+            sid=record.get("source_id")
+            if sid not in canonical or sid in output:
+                raise ValueError("Reviewer data missing, duplicate or unknown source ID")
+            output[sid]=_check_human_note(record,canonical[sid],draft)
+        return output
+    a,b=validated(first),validated(second)
+    names_a={x["reviewer"] for x in a.values()}
+    names_b={x["reviewer"] for x in b.values()}
+    if len(names_a)!=1 or len(names_b)!=1 or names_a==names_b:
+        raise ValueError("Independent reports must be from two distinct reviewers")
+    labels=[(a[x["source_id"]]["label"],b[x["source_id"]]["label"])
+            for x in cases]
+    same=sum(x==y for x,y in labels)
+    n=len(labels)
+    pa=Counter(x for x,y in labels)
+    pb=Counter(y for x,y in labels)
+    prob=sum(pa[x]*pb[x] for x in LABEL_OPTIONS)/(n*n)
+    observed=same/n
+    kappa=(observed-prob)/(1-prob) if prob<1 else (
+        1.0 if observed==1 else None)
+    base.update({
+      "first_reviewer_verified_count":n,
+      "second_reviewer_verified_count":n,
+      "first_reviewer_id_sha256":hashtext(list(names_a)[0]),
+      "second_reviewer_id_sha256":hashtext(list(names_b)[0]),
+      "exact_agreement_percent":round(observed*100,2),
+      "cohens_kappa":round(kappa,4) if kappa is not None else None,
+      "disagreement_ids":[cases[i]["source_id"] for i,(x,y) in enumerate(labels)
+                          if x!=y],
+      "arbitration_required":same!=n,
+      "owner_approval":"PENDING",
+      "status":"REQUIRES_OWNER_ARBITRATION" if same!=n else
+               "AGREEMENT_COMPUTED_NOT_OWNER_APPROVED"
+    })
+    return base

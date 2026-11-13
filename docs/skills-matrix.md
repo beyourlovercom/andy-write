@@ -22,3 +22,7 @@ A public December 2025 article (updated October 2026) was reverse-analysed read-
 ## V1.2.1 human goldset and factual claim-evidence
 
 Frozen 12 human source-alignment cases remain UNLABELED: 10 unmapped, 2 short, zero machine positives. Immutable human annotations/calibration require source hashes, reviewer and actual quote; no auto threshold deployment. Local Python traces every detected important claim against Owner original vs public retrieved passages with exact hashes, citation relevance, negation/number review and human factual approval. The Torso trial has 52 important claim candidates (32 HIGH); none independently fact-approved. See docs/v1.2-human-goldset-claim-evidence-2026-11-13.md.
+
+## V1.2.2 offline human labeling
+
+Two real private twelve-case source-to-draft review workbenches, agreement diagnostics for two actual distinct reviewers, exact source hash gating, and strict model-specific manufacturer primary evidence records. Human annotations remain 0/24; no factual/semantic approval. See docs/v1.2.2-human-review-roadmap-2026-11-13.md.

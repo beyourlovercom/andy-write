@@ -85,3 +85,17 @@ Every Quality report remains REVIEW_REQUIRED and publish_ready false
 until actual independent evidence/human sign-off. The raw content and
 review evidence are private, all images/videos are not generated, and
 Codex cannot be used for QA.
+
+## V1.2.2 real double-reviewer and manufacturer evidence gates
+
+The private qc-workbench HTML supports real human review of twelve original
+source examples without network requests. It never generates labels.
+Two distinct reviewers are required to calculate genuine agreement and Cohen
+kappa; disagreement IDs require Owner adjudication. Even perfect agreement
+cannot publish an article.
+
+A material, product-safety, cleaning or waterproofing factual confirmation
+requires the actual retrieved primary manufacturer source, exact model,
+matched official domain, official manual/spec document and literal quoted
+source passage. A Boolean and generic government link are never enough.
+Owner must still check true manufacturer authority. Codex is forbidden for QA.

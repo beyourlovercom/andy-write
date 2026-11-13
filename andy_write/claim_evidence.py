@@ -101,6 +101,24 @@ def validate_sources(sources:list[dict])->list[dict]:
         if not isinstance(date,str) or len(date)<10 or \
            not isinstance(pieces,list) or not pieces:
             raise ValueError("Source must have a retrieval time and actual extracted text")
+        # An official product-manual role cannot be self-declared by a general
+        # government or topic reference. Require exact intended product model
+        # and a primary manufacturer domain that matches the actual source URL.
+        evidence_role=source.get("evidence_role","unclassified")
+        if evidence_role not in ("unclassified","government_general",
+                                "independent_general","manufacturer_primary"):
+            raise ValueError("Unsupported source evidence role")
+        if evidence_role=="manufacturer_primary":
+            host=(urlsplit(url).hostname or "").lower().removeprefix("www.")
+            declared=(source.get("manufacturer_domain") or "").lower().removeprefix("www.")
+            model=source.get("product_model")
+            if (not declared or host!=declared
+                or not isinstance(model,str) or len(model.strip())<2
+                or source.get("document_type") not in
+                    ("official_product_manual","official_model_specifications")
+                or host.endswith((".gov",".gov.uk",".nhs.uk",".who.int"))):
+                raise ValueError("Manufacturer primary evidence requires matching "
+                                 "official domain, model and manual/spec document")
         if len(pieces)>250:
             raise ValueError("Evidence bundle has too many paragraphs")
         if any(not isinstance(p,str) or len(p)>3000 for p in pieces):
@@ -290,11 +308,14 @@ def apply_human_claim_reviews(report:dict,sources:list[dict],
             paragraphs=src["paragraphs"]
             if not any(raw_quote in paragraph for paragraph in paragraphs):
                 raise ValueError("Human source quote was not present in actual fetched text")
-            if (("PRODUCT_OR_SAFETY_SPEC" in row["reason_codes"])
-                and note.get("manufacturer_specific_confirmation") is not True):
-                # Human must check real model-specific requirements separately:
-                # a general government reference cannot establish toy compatibility.
-                raise ValueError("Product/material claim requires model-specific confirmation")
+            if "PRODUCT_OR_SAFETY_SPEC" in row["reason_codes"]:
+                # An unchecked boolean is not evidence. The exact cited source
+                # must itself be a verified, retrieved model-specific manual.
+                if (src.get("evidence_role")!="manufacturer_primary"
+                    or note.get("manufacturer_specific_confirmation") is not True
+                    or note.get("manufacturer_model")!=src.get("product_model")):
+                    raise ValueError("Product/material claim requires cited "
+                                     "model-specific manufacturer primary evidence")
         output.append({
             "claim_id":cid,"claim_sha256":row["claim_sha256"],
             "decision":note["decision"],

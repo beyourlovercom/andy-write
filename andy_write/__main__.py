@@ -13,7 +13,8 @@ from .rewrite_contract import CONTRACT_VERSION, validate_prepared_prompt
 from .fidelity import inspect_fidelity, review_sheet
 from .qc_reverse import html_qc_profile, markdown_qc_profile, compare_structure, skill_gap_actions
 from .qc_goldset import write_goldset
-from .qc_calibration import calibrate
+from .qc_calibration import calibrate, reviewer_agreement
+from .qc_review_workbench import export_workbench
 from .claim_evidence import trace_claims, apply_human_claim_reviews, claim_review_sheet
 from .usage_policy import verified_source_article
 from .codex_cli import DEFAULT_MODEL, run_writing, summarize_usage
@@ -231,6 +232,39 @@ def fidelity(source_path: str, draft_path: str, report_path: str,
                       "summary": result["summary"],
                       "caveat": result["metric_scope"]}, indent=2))
 
+def qc_workbench(packet_path:str, source_path:str, draft_path:str,
+                 output_path:str):
+    from .io import ROOT
+    private=(ROOT/".runs").resolve()
+    paths=[resolved(p) for p in (packet_path,source_path,draft_path,output_path)]
+    if any(not p.is_relative_to(private) for p in paths):
+        raise PermissionError("Complete private source/draft/review workbench stays in .runs")
+    packet,source,draft,out=paths
+    if not all(p.is_file() for p in (packet,source,draft)):
+        raise FileNotFoundError("Private frozen goldset and actual source/draft required")
+    result=export_workbench(packet,source.read_text(encoding="utf-8"),
+                            draft.read_text(encoding="utf-8"),out)
+    print(json.dumps(result,indent=2))
+
+def qc_agreement(packet_path:str,source_path:str,draft_path:str,
+                 review_a:str|None,review_b:str|None,report_path:str):
+    private=(ROOT/".runs").resolve()
+    paths=[resolved(p) for p in (packet_path,source_path,draft_path,report_path)]
+    for review in (review_a,review_b):
+        if review: paths.append(resolved(review))
+    if any(not p.is_relative_to(private) for p in paths):
+        raise PermissionError("Human review files and agreement report must remain private")
+    if any(not p.is_file() for p in paths[:3]):
+        raise FileNotFoundError("Goldset packet and original/draft required")
+    a=json.loads(resolved(review_a).read_text(encoding="utf-8")) if review_a else None
+    b=json.loads(resolved(review_b).read_text(encoding="utf-8")) if review_b else None
+    result=reviewer_agreement(
+        json.loads(resolved(packet_path).read_text(encoding="utf-8")),
+        resolved(source_path).read_text(encoding="utf-8"),
+        resolved(draft_path).read_text(encoding="utf-8"),a,b)
+    write_json(resolved(report_path),result)
+    print(json.dumps(result,indent=2))
+
 def qc_calibrate(packet_path:str,source_path:str,draft_path:str,
                  annotations_path:str|None,report_path:str):
     private=(ROOT/".runs").resolve()
@@ -374,6 +408,18 @@ def main(argv: list[str] | None = None) -> int:
             sp.add_argument("--force", action="store_true")
         if name in ("review", "quality", "media-plan"):
             sp.add_argument("--draft", required=True)
+    wb = sub.add_parser("qc-workbench", help="Export 12-item private offline human review UI")
+    wb.add_argument("--packet",required=True)
+    wb.add_argument("--source",required=True)
+    wb.add_argument("--draft",required=True)
+    wb.add_argument("--out",required=True)
+    agreement = sub.add_parser("qc-agreement", help="Check two independent human reviewers; no auto Owner PASS")
+    agreement.add_argument("--packet",required=True)
+    agreement.add_argument("--source",required=True)
+    agreement.add_argument("--draft",required=True)
+    agreement.add_argument("--review-a",default=None)
+    agreement.add_argument("--review-b",default=None)
+    agreement.add_argument("--report",required=True)
     ca = sub.add_parser("qc-calibrate", help="Calibrate against actual human labels; never invent them")
     ca.add_argument("--packet",required=True)
     ca.add_argument("--source",required=True)
@@ -407,6 +453,13 @@ def main(argv: list[str] | None = None) -> int:
                     help="Optional human-reviewed source mapping JSON in private .runs")
     args = parser.parse_args(argv)
     try:
+        if args.command == "qc-workbench":
+            qc_workbench(args.packet,args.source,args.draft,args.out)
+            return 0
+        if args.command == "qc-agreement":
+            qc_agreement(args.packet,args.source,args.draft,
+                         args.review_a,args.review_b,args.report)
+            return 0
         if args.command == "qc-calibrate":
             qc_calibrate(args.packet,args.source,args.draft,args.annotations,args.report)
             return 0

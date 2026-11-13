@@ -53,3 +53,11 @@ The institutional evidence fetch script is read-only and bounded, with
 private .runs storage. Log 403/404 honestly, never invent a successful
 fetch or substitute a source from a different topic. No Codex for
 research, source classification or factual QA.
+
+## V1.2.2 manufacturer evidence identity
+
+For product-specific material/safety assertions, attach an actual retrievable
+manufacturer_primary source with matching manufacturer_domain and product_model
+and an official_product_manual or official_model_specifications type.
+A human review must cite a literal paragraph and verify the same model.
+General public agency advice is not a substitute for a model's manual.

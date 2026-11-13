@@ -63,3 +63,12 @@ is really supported. Official government web pages cannot validate
 specific toy material, cleaning, temperature or water-resistance ratings
 without model-appropriate manufacturer support. Leave unproven claims
 as NEEDS_REVIEW; never invent a citation. Codex remains rewriting only.
+
+## V1.2.2 human reviewer workstation
+
+Review the original and completed draft in a locally generated qc-workbench
+HTML file, select a real semantic label, give a substantive reason and cite
+the actual target excerpt where retention is asserted. Export JSON locally.
+Independent reviewers submit separate reviews; qc-agreement surfaces
+disagreements for Owner arbitration. Do not count AI proposed labels as
+human truth, and do not use Codex CLI for QA.

@@ -100,11 +100,51 @@ class EvidenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"model-specific"):
             apply_human_claim_reviews(report,[record],[note])
         note["manufacturer_specific_confirmation"]=True
-        out=apply_human_claim_reviews(report,[record],[note])
+        with self.assertRaisesRegex(ValueError,"model-specific manufacturer"):
+            apply_human_claim_reviews(report,[record],[note])
+        # Synthetic example manual for unit testing ONLY, not a real product
+        # or a false assertion of evidence in a real article.
+        manual=external("https://manufacturer.example.com/docs/AB12",
+                        "Always follow manufacturer instructions when cleaning this silicone product.")
+        manual["evidence_role"]="manufacturer_primary"
+        manual["manufacturer_domain"]="manufacturer.example.com"
+        manual["product_model"]="AB12"
+        manual["document_type"]="official_product_manual"
+        note["source_url"]=manual["url"]
+        note["manufacturer_model"]="AB12"
+        out=apply_human_claim_reviews(report,[manual],[note])
         self.assertEqual(out["reviewed_claim_count"],1)
         self.assertEqual(out["owner_release_approval"],"PENDING")
         self.assertFalse(out["automatic_publish_ready"])
         self.assertGreaterEqual(out["pending_claim_count"],0)
+
+    def test_government_page_cannot_become_manufacturer_manual_by_boolean(self):
+        record=external("https://www.cdc.gov/niosh/ergonomics/",
+                        "Check product safety instructions before use.")
+        record.update({
+            "evidence_role":"manufacturer_primary",
+            "manufacturer_domain":"www.cdc.gov",
+            "product_model":"AB12","document_type":"official_product_manual",
+        })
+        with self.assertRaisesRegex(ValueError,"Manufacturer primary evidence"):
+            validate_sources([record])
+
+    def test_manufacturer_role_requires_exact_model_and_domain(self):
+        record=external("https://manufacturer.example.com/docs/AB12",
+                        "Check product safety instructions before use.")
+        record.update({
+           "evidence_role":"manufacturer_primary",
+           "manufacturer_domain":"manufacturer.example.com",
+           "product_model":"AB12",
+           "document_type":"official_model_specifications",
+        })
+        self.assertEqual(len(validate_sources([record])),1)
+        wrong=dict(record,product_model="")
+        with self.assertRaises(ValueError):
+            validate_sources([wrong])
+        wrong=dict(record,manufacturer_domain="other.example.com")
+        with self.assertRaises(ValueError):
+            validate_sources([wrong])
 
     def test_invented_evidence_quote_rejected_even_if_url_is_official(self):
         draft="# Article\n\n## Care\n\nAlways follow manufacturer instructions when cleaning this silicone product."

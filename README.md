@@ -86,3 +86,9 @@ Owner 约束详见 [P0 Codex 文章改写专用与媒体生成禁令](docs/owner
 保留 12 项真实原文人工标注样本，拒绝以 AI 预标注代替人类校对；尚无真实标签时不自动调参。每次改写完后，Python 自动列出重要事实、源证据与待审核项，材料、兼容、防水和清洁问题要求对应产品厂家证据。没有真实事实与语义审核，整体始终 REVIEW_REQUIRED，publish_ready=false。Codex 只能用于改写，不生成图片视频。
 
 详细可复现实验：[V1.2.1 人工校准与事实证据](docs/v1.2-human-goldset-claim-evidence-2026-11-13.md)
+
+## V1.2.2 双人审核工作台
+
+新增本地私有 HTML 原文对照与双人审核一致率；实际人工审核结果仍为 PENDING。产品材料安全主张必须匹配真实厂家型号与说明书，不能使用单个布尔选项代替证据。全部优化遵守 Owner P0，Codex 仅限文章改写，不生成图片视频。
+
+详细 Roadmap、工时与验收见 docs/v1.2.2-human-review-roadmap-2026-11-13.md。

@@ -3,7 +3,8 @@ from __future__ import annotations
 import json
 import unittest
 from andy_write.qc_calibration import (
-    calibrate, validate_packet, machine_positive, REVIEW_DECLARATION
+    calibrate, validate_packet, machine_positive, REVIEW_DECLARATION,
+    reviewer_agreement
 )
 from andy_write.qc_goldset import build_goldset
 from andy_write.fidelity import inspect_fidelity, PARAGRAPH
@@ -86,6 +87,36 @@ class CalibrationTests(unittest.TestCase):
         out=calibrate(self.packet,self.original,self.draft,notes)
         self.assertEqual(out["calibration_status"],"INSUFFICIENT_BALANCED_GOLDSET")
         self.assertIsNone(out["calibrated_threshold"])
+    def test_two_independent_reviewers_must_be_distinct(self):
+        a=[self.fake_note(x,"SEMANTICALLY_RETAINED")
+           for x in self.packet["cases"]]
+        out=reviewer_agreement(self.packet,self.original,self.draft,a,None)
+        self.assertEqual(out["status"],"TWO_INDEPENDENT_HUMAN_REVIEWS_REQUIRED")
+        with self.assertRaisesRegex(ValueError,"two distinct reviewers"):
+            reviewer_agreement(self.packet,self.original,self.draft,a,a)
+
+    def test_two_reviewer_disagreement_and_kappa_only_after_real_attestations(self):
+        a=[self.fake_note(x,"SEMANTICALLY_RETAINED" if i%2 else "LOST_USEFUL_INFORMATION")
+           for i,x in enumerate(self.packet["cases"])]
+        b=[dict(x,reviewer="Second Example Editor (test only)") for x in a]
+        b[0]["label"]="SEMANTICALLY_RETAINED"
+        r=reviewer_agreement(self.packet,self.original,self.draft,a,b)
+        self.assertEqual(r["status"],"REQUIRES_OWNER_ARBITRATION")
+        self.assertEqual(len(r["disagreement_ids"]),1)
+        self.assertIsInstance(r["cohens_kappa"],float)
+        self.assertFalse(r["owner_approval"]=="PASS")
+        self.assertEqual(r["first_reviewer_verified_count"],12)
+
+    def test_perfect_two_reviewer_agreement_does_not_approve_publication(self):
+        a=[self.fake_note(x,"SEMANTICALLY_RETAINED")
+           for x in self.packet["cases"]]
+        b=[dict(x,reviewer="Another Example Editor (test only)") for x in a]
+        r=reviewer_agreement(self.packet,self.original,self.draft,a,b)
+        self.assertEqual(r["exact_agreement_percent"],100)
+        self.assertEqual(r["cohens_kappa"],1.0)
+        self.assertEqual(r["status"],"AGREEMENT_COMPUTED_NOT_OWNER_APPROVED")
+        self.assertEqual(r["owner_approval"],"PENDING")
+
     def test_short_item_never_machine_semantic_pass(self):
         self.assertFalse(machine_positive({"state":"SHORT_OR_HEADING_REVIEW"},
                                           recall=.4,anchors=.3))
