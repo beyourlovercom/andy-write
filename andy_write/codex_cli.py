@@ -17,6 +17,7 @@ import time
 from .io import ROOT, hashtext, now, outdir, resolved, write_json
 from .review import check
 from .usage_policy import permit_codex_stage, verified_source_article
+from .rewrite_contract import validate_prepared_prompt
 from .content_quality import (audit, review_targets, split_sections,
     parse_rewritten_sections, edit_sections, normalize_intro)
 
@@ -321,8 +322,7 @@ def run_writing(
     prompt_file = directory / "writing-prompt.md"
     if not prompt_file.is_file():
         raise RuntimeError("Run the research/outline stage first")
-    original = verified_source_article(job, directory)
-    reference_prompt = prompt_file.read_text(encoding="utf-8")
+    reference_prompt, source_receipt = validate_prepared_prompt(job, directory)
     quality_mode = job.get("quality_profile") == "people_first"
     research_pack, source_catalog = {}, {}
     if quality_mode:
@@ -393,7 +393,8 @@ def run_writing(
     report = {"job_id": job["job_id"], "model": model, "provider": "codex_cli",
               "timestamp": now(), "target_words": target, "allowed_range": [low, high],
               "actual_words": count, "within_word_range": within,
-              "quality": final_quality, "content_quality": after, "status": status,
+              "quality": final_quality, "content_quality": after,
+              "source_contract": source_receipt, "status": status,
               "last_stage": last_stage, "cache_hits": cache_hits,
               "wordpress_status": "UNTOUCHED", "human_factual_approval": "PENDING"}
     write_json(directory / "codex-writing-result.json", report)

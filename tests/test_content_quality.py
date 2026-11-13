@@ -164,12 +164,16 @@ class TestTargetedChapterWorkflow(unittest.TestCase):
                     '{"type":"turn.completed"}\n',"")
         with TemporaryDirectory() as folder:
             dest = pathlib.Path(folder)
-            (dest/"writing-prompt.md").write_text("Grounded draft context")
             original = dest / "owner-source.md"
             original.write_text(sample, encoding="utf-8")
             from andy_write.io import hashtext
+            from andy_write.rewrite_contract import source_envelope, CONTRACT_VERSION
+            prompt = "Grounded draft context.\n" + source_envelope(sample, job["source_url"])
+            (dest/"writing-prompt.md").write_text(prompt, encoding="utf-8")
             (dest/"run-manifest.json").write_text(
-                json.dumps({"source_sha256":hashtext(sample)}))
+                json.dumps({"source_sha256":hashtext(sample),
+                            "writing_prompt_sha256":hashtext(prompt),
+                            "rewrite_source_contract_version":CONTRACT_VERSION}))
             (dest/"research-pack.json").write_text(json.dumps(source))
             (dest/"source-catalog.json").write_text(json.dumps(segments))
             with patch("andy_write.codex_cli.outdir", return_value=dest):

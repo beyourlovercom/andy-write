@@ -9,6 +9,7 @@ from .cache import cached_research
 from .source import classify, evidence
 from .outline import section_plan, markdown_outline
 from .llm import prepare_prompt, write_openai
+from .rewrite_contract import CONTRACT_VERSION, validate_prepared_prompt
 from .codex_cli import DEFAULT_MODEL, run_writing, summarize_usage
 from .review import check
 from .benchmark import scrape_qc_metrics, compare_draft
@@ -34,6 +35,8 @@ def run(job: dict):
     (out / "writing-prompt.md").write_text(prompt, encoding="utf-8")
     write_json(out / "run-manifest.json", {
         "job_id": job["job_id"], "created_at": now(), "source_sha256": hashtext(original),
+        "writing_prompt_sha256": hashtext(prompt),
+        "rewrite_source_contract_version": CONTRACT_VERSION,
         "research_mode": pack["collection_mode"], "research_cache_hit": was_cached,
         "steps_completed": ["R1 Research", "R1 Source", "R2 Outline", "R2 Prompt"],
         "prose_status": "NOT_GENERATED_BY_THIS_COMMAND", "wordpress_status": "UNTOUCHED"
@@ -63,8 +66,9 @@ def write(job: dict, model: str | None, provider: str, target: int,
              "factual_review": "PENDING", "wordpress": "UNTOUCHED"}, indent=2))
         return
     if provider == "openai":
-        draft, receipt = write_openai(prompt_path.read_text(encoding="utf-8"),
-                                      model or "gpt-6.1-terra")
+        full_prompt, source_receipt = validate_prepared_prompt(job, out)
+        draft, receipt = write_openai(full_prompt, model or "gpt-6.1-terra")
+        receipt["source_contract"] = source_receipt
         (out / "article-v1.md").write_text(draft + "\n", encoding="utf-8")
         write_json(out / "model-receipt.json", receipt)
         write_json(out / "review-v1.json", check(draft, job))

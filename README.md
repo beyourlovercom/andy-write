@@ -39,6 +39,7 @@ python3 -m unittest discover -s tests -v
 - 默认使用 `dc_free` 来源模式，不需要 SerpApi 账号或 Key：采集已知网页 + OpenAlex 相关研究元数据；本地缓存 7 天以节约请求次数。它不能替代全网 Google 排名数据。可通过 `SERPAPI_API_KEY` + `research_mode: serpapi` 启用真实 Google SERP。
 - 默认支持美国 Mac mini 的 Codex CLI + GPT-6.1 Terra (最低 0.159.0，当前已验证 0.167.2)，仅改写用户提供的完整原文、精修和限次定向重写；无需单独的 OpenAI API Key，但受到 ChatGPT Plus Codex 额度限制。
 - 目标字数默认 1000 词，容差 7%；按真实模型响应记录 Tokens、缓存命中、阶段耗时；重复任务命中本地结果缓存不会重复耗费额度。
+- **V1.1 完整原文契约：** 模型改写前必须验证整篇 Owner 原文、来源、原文/Prompt SHA-256；旧摘要提示会被拒绝。真实输入完整性数据和限制见 [V1.1 UAT](docs/v1.1-full-source-skill-uat-2026-11-13.md)。
 - 可选 --provider openai 需要独立 OPENAI_API_KEY；没有凭据会明确失败，不假冒模型生成。
 - Owner P0（2026-11-13）：Codex CLI **仅允许改写用户提供的完整文章**，不得用于其他用途。**所有图片、视频生成禁用**，不允许通过其他工具绕过。既有 R3 图片仅为历史审核素材。
 

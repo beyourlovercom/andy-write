@@ -56,6 +56,14 @@ class TestR2Codex(unittest.TestCase):
         self.job = {"job_id": "test-unboxing", "brand": "pairdoll",
                     "source_path": "owner-source.md",
                     "source_url": "https://example.com/owner-article"}
+        from andy_write.rewrite_contract import source_envelope, CONTRACT_VERSION
+        prompt = "Source-grounded rewrite.\n" + source_envelope(
+            self.source.read_text(encoding="utf-8"), self.job["source_url"])
+        (self.directory / "writing-prompt.md").write_text(prompt, encoding="utf-8")
+        (self.directory / "run-manifest.json").write_text(
+            json.dumps({"source_sha256": hashtext(self.source.read_text(encoding="utf-8")),
+                        "writing_prompt_sha256": hashtext(prompt),
+                        "rewrite_source_contract_version": CONTRACT_VERSION}))
         resolver = patch("andy_write.usage_policy.resolved",return_value=self.source)
         resolver.start()
         self.addCleanup(resolver.stop)
