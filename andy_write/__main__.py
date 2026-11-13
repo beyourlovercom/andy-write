@@ -11,6 +11,8 @@ from .outline import section_plan, markdown_outline
 from .llm import prepare_prompt, write_openai
 from .rewrite_contract import CONTRACT_VERSION, validate_prepared_prompt
 from .fidelity import inspect_fidelity, review_sheet
+from .qc_reverse import html_qc_profile, markdown_qc_profile, compare_structure, skill_gap_actions
+from .qc_goldset import write_goldset
 from .usage_policy import verified_source_article
 from .codex_cli import DEFAULT_MODEL, run_writing, summarize_usage
 from .review import check
@@ -26,7 +28,7 @@ def run(job: dict):
     pack, was_cached = cached_research(job, out)
     catalog = classify(original, job["source_url"])
     ledger = evidence(pack, catalog)
-    sections = section_plan(job, catalog)
+    sections = section_plan(job, catalog, original)
     outline = markdown_outline(job, sections, ledger)
     prompt = prepare_prompt(job, original, outline, catalog, ledger)
     write_json(out / "research-pack.json", pack)
@@ -196,6 +198,67 @@ def fidelity(source_path: str, draft_path: str, report_path: str,
                       "summary": result["summary"],
                       "caveat": result["metric_scope"]}, indent=2))
 
+def qc_goldset(source_path:str,draft_path:str,report_path:str,size:int):
+    from .io import ROOT
+    root=(ROOT/".runs").resolve()
+    original=resolved(source_path)
+    if not original.is_relative_to(root):
+        raise ValueError("Owner source for human labels must remain private")
+    target=resolved(draft_path)
+    if not original.is_file() or not target.is_file():
+        raise FileNotFoundError("Actual source and existing draft files are required")
+    receipt=write_goldset(original.read_text(encoding="utf-8"),
+                          target.read_text(encoding="utf-8"),
+                          resolved(report_path),size)
+    print(json.dumps(receipt,indent=2))
+
+def qc_profile(post_file: str, draft_file: str, report_file: str,
+               draft_url: str):
+    """Offline only. A competitor article is a STRUCTURE BENCHMARK, not a writing source."""
+    from .io import ROOT
+    private = (ROOT / ".runs").resolve()
+    post_path = resolved(post_file)
+    report_path = resolved(report_file)
+    draft_path = resolved(draft_file)
+    if not post_path.is_relative_to(private) or not report_path.is_relative_to(private):
+        raise ValueError("Competitor HTML and QC report must stay in private .runs")
+    if not post_path.is_file() or not draft_path.is_file():
+        raise FileNotFoundError("Private public-post snapshot and existing draft required")
+    source = json.loads(post_path.read_text(encoding="utf-8"))
+    if isinstance(source, list):
+        if len(source) != 1:
+            raise ValueError("One exact WordPress article required")
+        source = source[0]
+    if (not isinstance(source, dict) or
+        not source.get("date","").startswith(("2025-11","2025-12"))):
+        raise ValueError("Benchmark article must have 2025 November/December date")
+    html = source["content"]["rendered"]
+    profile = html_qc_profile(html,url=source["link"],date=source["date"],
+                              modified=source.get("modified",""),
+                              article_id=source.get("id"))
+    current = markdown_qc_profile(draft_path.read_text(encoding="utf-8"),
+                                   source_label=draft_url)
+    result = {
+        "benchmark": profile,
+        "andy_write_existing_draft": current,
+        "comparison": compare_structure(profile,current),
+        "skill_change_candidates": skill_gap_actions(profile,current),
+        "owner_policy": "SKILL_FIRST + EVIDENCE_BASED + VERSION_ROLLBACK",
+        "no_model_calls": True,
+        "competitor_rewrite": False,
+        "publish_ready": False
+    }
+    write_json(report_path, result)
+    print(json.dumps({
+        "status":"STRUCTURAL_REVIEW_REQUIRED",
+        "report":str(report_path),
+        "benchmark_post_id":profile["source_post_id"],
+        "first_published":profile["original_publication_date"],
+        "modified":profile["last_public_modified"],
+        "structure_diff":result["comparison"]["rows"],
+        "caveat":result["comparison"]["important_context"]
+    },indent=2))
+
 def benchmark(job: dict):
     bench = scrape_qc_metrics()
     dest = outdir(job) / "benchmark.json"
@@ -221,6 +284,17 @@ def main(argv: list[str] | None = None) -> int:
             sp.add_argument("--force", action="store_true")
         if name in ("review", "quality", "media-plan"):
             sp.add_argument("--draft", required=True)
+    gs = sub.add_parser("qc-goldset", help="Private human annotation packet, no Codex")
+    gs.add_argument("--source",required=True)
+    gs.add_argument("--draft",required=True)
+    gs.add_argument("--report",required=True)
+    gs.add_argument("--size",type=int,default=12)
+    qa = sub.add_parser("qc-profile", help="Offline public-article QC blueprint (no Codex)")
+    qa.add_argument("--post-json", required=True)
+    qa.add_argument("--draft", required=True)
+    qa.add_argument("--report", required=True)
+    qa.add_argument("--draft-url", required=True,
+                    help="URL/host context of existing Owner draft; avoid fixed brand")
     fv = sub.add_parser("fidelity", help="Offline full-article content mapping; no Codex")
     fv.add_argument("--source", required=True)
     fv.add_argument("--draft", required=True)
@@ -229,6 +303,12 @@ def main(argv: list[str] | None = None) -> int:
                     help="Optional human-reviewed source mapping JSON in private .runs")
     args = parser.parse_args(argv)
     try:
+        if args.command == "qc-goldset":
+            qc_goldset(args.source,args.draft,args.report,args.size)
+            return 0
+        if args.command == "qc-profile":
+            qc_profile(args.post_json,args.draft,args.report,args.draft_url)
+            return 0
         if args.command == "fidelity":
             fidelity(args.source, args.draft, args.report, args.notes)
             return 0

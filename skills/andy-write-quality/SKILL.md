@@ -42,3 +42,25 @@ for QA, evidence matching or script execution. Owner notes must have rationale,
 source hashes and (for positive claims) a real exact target quotation.
 Unsafe, universalized or SKU-inapplicable original advice may be intentionally
 omitted if documented; literal word copying is not the quality goal.
+
+## V1.2 KissSelf reverse-QC calibration — evidence before word count
+
+Use public WordPress articles ONLY as structural and risk benchmarks, never as
+model rewrite sources or canonical truth. The read-only, offline qc-profile
+command accepts a private WP REST snapshot and an existing Owner article draft,
+producing a derived-metrics report with no competitor prose retained in Git.
+Track words, heading hierarchy, tables, actual image Alt coverage, list/callout
+frequency, internal/external link patterns and sentence-level product/safety
+claim candidates. Match each citation to the exact claim it supports; HTTP
+200 or a government-domain link alone does not validate adjacent prose.
+
+KissSelf's public December 26 2025 sample currently contains 27 H3s and 9
+tables in about 5.9k words, but that is NOT an SEO or editorial quality target
+for a 1k-word piece. Require intent/source-grounded subsections, decision
+tables and FAQ only when justified, and avoid keyword stuffing, link volume
+targets or unsupported material/IP claims. Product/maker guidance is required
+for compatibility, cleaning, waterproofing and disinfection assertions.
+Outputs are HUMAN_REVIEW_REQUIRED when facts/semantic retention are uncertain.
+
+Owner P0: Codex CLI ONLY rewrites a complete Owner-provided original; this
+reverse-QC skill never invokes Codex. All image/video generation prohibited.

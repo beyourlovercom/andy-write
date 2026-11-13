@@ -24,3 +24,18 @@ private and is never copied into the committed QA report.
 Shared or boilerplate terms must not cause false retained-status decisions.
 Distinctive source term overlap is only a candidate for human semantic review.
 No Codex CLI may be invoked by this Skill.
+
+## V1.2 public QC benchmark vs Owner rewrite provenance
+
+Distinguish two evidence roles: (1) Owner/team-supplied ORIGINAL reference
+authorizes source-grounded rewriting after hash validation; (2) a public
+competitor article is a QC BENCHMARK ONLY, never an Owner original or a model
+permission to produce a derivative of its copyrighted prose. Keep full
+competitor HTML and Owner source private in Git-ignored .runs; commit only
+structural metrics, risk counts, URLs, date/provenance and limitations.
+
+Public source dates must distinguish original 2025 publication from a later
+2026 revision. Structural volume does not equal factual soundness. For
+numerical, medical, IP-rating, cleaning/compatibility, materials and safety
+claims, the evidence must specifically support the exact statement, or
+it stays pending human review.

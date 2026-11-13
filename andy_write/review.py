@@ -39,6 +39,13 @@ def check(markdown: str, job: dict) -> dict:
     if "## Conclusion" not in markdown:
         findings.append({"severity": "review", "code": "MISSING_CONCLUSION"})
     for h2 in re.findall(r"^## (.+)$", markdown, flags=re.M):
+        if h2 != "Conclusion" and re.search(
+            r"\b(?:original guide|source article|editorial review|"
+            r"need review|should be reviewed|draft version|"
+            r"writing process|model output)\b", h2, re.I):
+            findings.append({
+                "severity":"review","code":"EDITORIAL_PROCESS_HEADING_LEAK",
+                "detail":h2[:110]})
         if h2 != "Conclusion" and not h2.endswith("?"):
             findings.append({"severity": "review", "code": "NON_QUESTION_H2", "detail": h2})
     urls = re.findall(r"\]\((https?://[^)]+)\)", markdown)

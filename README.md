@@ -74,3 +74,9 @@ Owner 约束详见 [P0 Codex 文章改写专用与媒体生成禁令](docs/owner
 
 [真实双文章 UAT](docs/v1.2-cross-article-fidelity-uat-2026-11-13.md) ·
 [Skill 操作与人工审核规则](docs/v1.2-fidelity-operations.md)
+
+## V1.2 KissSelf QC 逆向实验
+
+基于 KissSelf 2025-12-26 发表、2026-10-04 更新的真实公开文章，只读获取当前版本结构与内容风险候选；用已提供的团队原文进行两轮受控改写 A/B。H3 从 0 到 13，读者标题内部流程泄漏从 2 到 0；但语义忠实度仍未人工确认。绝不照搬竞争站正文或机械追求长文、表格数量。
+
+[实测和差异](docs/v1.2-kissself-qc-reverse-2026-11-13.md) · [复现与人工标注](docs/v1.2-kissself-qc-operations.md)

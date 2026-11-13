@@ -10,6 +10,7 @@ import json
 import re
 from urllib.parse import urlsplit
 from .io import now
+from .qc_reverse import score_paragraph_risks
 
 EMPTY_PHRASES = (
     "in the realm of", "embark on a journey", "treasure trove",
@@ -205,7 +206,11 @@ def audit(article: str, job: dict, research_pack: dict | None = None,
                   "retrieved_source_urls": sorted(u for u in available if u)},
         "issues": issues,
         "status": "REVIEW" if issues else "RULE_CHECK_PASS",
-        "human_fact_check": "PENDING"
+        "human_fact_check": "PENDING",
+        "qc_material_claim_candidates": score_paragraph_risks(
+            [section["body"] for section in sec]),
+        "qc_safety_scope": ("Language-pattern review candidates only. "
+                            "Check product/material sources; not verified factual errors.")
     }
 
 def review_targets(quality: dict) -> list[str]:

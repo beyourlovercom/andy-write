@@ -30,3 +30,20 @@ notes; do not claim an automatic semantic PASS.
 
 Codex CLI remains for ARTICLE REWRITING ONLY. Source comparison, review
 worklists, claim checks, research and all software work run without Codex.
+
+## V1.2 topic-aware editing — no unboxing template leakage
+
+For a source_hierarchy_v1 job, rewriting/editing/word tightening must preserve
+the exact source-derived H2 plan, NOT force six generic Unboxing headings or
+deliveries. A targeted chapter repair can use the source-owned section only;
+do not insert foam/packaging guidance into unrelated how-to articles. The
+editor evaluates safety claims against the actual manufacturer's rules and
+preserves useful Owner details with qualified uncertainty.
+
+After editing, local Source Fidelity and reverse-QC diagnostics provide
+review worklists but cannot themselves establish semantic accuracy or
+human factual approval. Compare the reference and final rewritten article
+with the private passage mapping sheet before any release approval.
+
+Codex CLI is limited to the article rewrite/edit tasks; all other QC,
+research, planning, code, publication and media generation are forbidden.
