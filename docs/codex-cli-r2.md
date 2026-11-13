@@ -1,3 +1,5 @@
+> **Owner P0 update, 2026-11-13:** Codex CLI is reserved strictly for rewriting existing user-supplied full articles. All image/video generation is prohibited. Earlier imagegen instructions in this historical document have been superseded. See docs/owner-policy-2026-11-13.md.
+
 # R2 自动写作执行器 — Codex CLI GPT-6.1
 
 执行设备：美国 Mac mini，使用 BYL DC。该机 Codex CLI 已从 0.149.0 升级到 0.167.2，并已验证 GPT-6.1 Terra 可用。美国 Mac 的本地默认模型已变更为 gpt-6.1-terra；Andy Write 的每次调用也会显式传入模型 ID。
@@ -24,7 +26,7 @@
 - GPT-6.1 Terra 最低 CLI 版本 0.159.0；使用非交互 JSONL 接口捕获每次真实 turn.completed.usage。
 - 通过现有 ChatGPT 登录使用 Codex，免费于普通 API 独立账单，但会消耗 Codex 订阅额度；不是无限量。
 - 只读 CLI 沙盒，不允许在 WordPress、Notion 或其他站点发布。
-- 初稿和编辑各一次；如字数偏离、缺少六个问句 H2 或结构 QA 未通过，允许最多一次修订。最多可设 2 次。
+- 基于用户原文的改写和编辑各一次；如字数偏离、缺少六个问句 H2 或结构 QA 未通过，允许最多一次修订。最多可设 2 次。
 - 默认 1,000 英文词，容差 7%，即 930–1,070 词。字数由 Python 独立计数，不能相信模型自行报告字数。
 - 缓存依赖模型 ID、Prompt 哈希、实际输出 SHA-256。相同任务重复执行不会重新消耗模型用量。
 - 每次真实成功或失败的调用记录到本地 codex-usage-ledger.jsonl：时间、模型、阶段、输入/缓存/输出/推理 Tokens、词数、结果和失败原因。

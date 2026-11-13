@@ -3,7 +3,21 @@
   "require_reference_for_pairdoll": true,
   "never_publish_without_approval": true,
   "r0_r2_wordpress_writes": false,
-  "internal_note_markers": ["Editorial image placement", "English article draft", "adapted from a detailed beginner", "AI Draft", "TODO"],
-  "required_article_sections": ["Conclusion"],
-  "max_external_links_for_demo": 3
+  "internal_note_markers": [
+    "Editorial image placement",
+    "English article draft",
+    "adapted from a detailed beginner",
+    "AI Draft",
+    "TODO"
+  ],
+  "required_article_sections": [
+    "Conclusion"
+  ],
+  "max_external_links_for_demo": 3,
+  "owner_policy_version": "ANDY_WRITE_CODEX_REWRITE_ONLY_2026_11_13",
+  "codex_cli_allowed_purpose": "user_supplied_article_rewriting_only",
+  "codex_cli_no_external_tools": true,
+  "image_generation_enabled": false,
+  "video_generation_enabled": false,
+  "media_mode": "existing_or_user_supplied_assets_review_only"
 }

@@ -16,6 +16,7 @@ import subprocess
 import time
 from .io import ROOT, hashtext, now, outdir, resolved, write_json
 from .review import check
+from .usage_policy import permit_codex_stage, verified_source_article
 from .content_quality import (audit, review_targets, split_sections,
     parse_rewritten_sections, edit_sections, normalize_intro)
 
@@ -49,8 +50,10 @@ def codex_version() -> tuple[int, int, int]:
         raise RuntimeError("Could not determine installed Codex CLI version")
     return tuple(int(n) for n in match.groups())
 
-def run_model(model: str, prompt: str, timeout: int = 240) -> tuple[str, dict, str, str]:
-    """Perform one real read-only codex invocation; no mock/fallback response."""
+def run_model(model: str, prompt: str, timeout: int = 240,
+              *, stage: str) -> tuple[str, dict, str, str]:
+    """ONLY rewrite an existing user-supplied article. No other Codex calls."""
+    permit_codex_stage(stage)
     if model not in SUPPORTED_MODELS:
         raise ValueError("Unsupported Codex model; choose a supported explicit ID")
     installed = codex_version()
@@ -76,6 +79,12 @@ def run_model(model: str, prompt: str, timeout: int = 240) -> tuple[str, dict, s
         except json.JSONDecodeError:
             continue
         items.append(event.get("type", "unknown"))
+        if event.get("type") in ("item.started", "item.completed"):
+            item = event.get("item") or {}
+            if item.get("type") in (
+                "command_execution", "file_change", "mcp_tool_call",
+                "web_search", "image_generation", "tool_call", "code_interpreter"):
+                errors.append("Disallowed model tool action: " + str(item.get("type")))
         if event.get("type") == "item.completed":
             item = event.get("item") or {}
             if item.get("type") == "agent_message" and item.get("text"):
@@ -127,6 +136,7 @@ def invoke_stage(
     force: bool = False, timeout: int = 240
 ) -> tuple[str, dict, bool]:
     """Idempotent per-stage invocation by exact prompt and model fingerprint."""
+    permit_codex_stage(stage)
     if not re.fullmatch(r"[a-z0-9_-]+", stage):
         raise ValueError("Unsafe stage name")
     expected_hash = hashtext(model + "\n" + prompt)
@@ -147,7 +157,8 @@ def invoke_stage(
              "status": "failed", "input_tokens": None, "output_tokens": None,
              "cached_input_tokens": None, "reasoning_output_tokens": None}
     try:
-        body, stats, stdout, stderr = run_model(model, prompt, timeout=timeout)
+        body, stats, stdout, stderr = run_model(
+            model, prompt, timeout=timeout, stage=stage)
         entry.update(stats)
         entry["status"] = "completed"
         entry["output_sha256"] = hashtext(body)
@@ -195,7 +206,9 @@ def initial_prompt(reference_prompt: str, target: int, low: int, high: int,
                    context: str = "") -> str:
     return (
         reference_prompt + "\n\n"
-        "R2 PEOPLE-FIRST ARTICLE TASK. Write ONE evidence-grounded article "
+        "OWNER RESTRICTION: Rewrite the complete user-supplied original article; "
+        "never write an unrelated original article from keywords or research alone. "
+        "R2 PEOPLE-FIRST ARTICLE REWRITE. Produce ONE grounded revision "
         f"with {low}–{high} English words, aiming for {target}. "
         "Use an H1, six question-form H2s and ## Conclusion. "
         "Each section must answer a useful user decision, with concrete observed examples "
@@ -308,14 +321,7 @@ def run_writing(
     prompt_file = directory / "writing-prompt.md"
     if not prompt_file.is_file():
         raise RuntimeError("Run the research/outline stage first")
-    if job.get("source_path"):
-        manifest = directory / "run-manifest.json"
-        if not manifest.is_file():
-            raise RuntimeError("Source manifest absent; rerun Research/Outline before writing")
-        record = json.loads(manifest.read_text(encoding="utf-8"))
-        current = resolved(job["source_path"]).read_text(encoding="utf-8")
-        if record.get("source_sha256") != hashtext(current):
-            raise RuntimeError("Reference source changed; rerun Research/Outline before writing")
+    original = verified_source_article(job, directory)
     reference_prompt = prompt_file.read_text(encoding="utf-8")
     quality_mode = job.get("quality_profile") == "people_first"
     research_pack, source_catalog = {}, {}
@@ -333,13 +339,13 @@ def run_writing(
     context = source_context(job, research_pack, source_catalog) if quality_mode else ""
     model_prompt = initial_prompt(reference_prompt, target, low, high, context)
     draft, _, hit_draft = invoke_stage(
-        job, "draft", model_prompt, model, directory, force, timeout)
+        job, "rewrite", model_prompt, model, directory, force, timeout)
     edited, _, hit_edit = invoke_stage(
         job, "edit", edit_prompt(draft, target, low, high, context),
         model, directory, force, timeout)
     article, last_stage = edited, "edit"
     article, intro_auto_fixed = normalize_intro(article) if quality_mode else (article, False)
-    cache_hits = {"draft": hit_draft, "edit": hit_edit}
+    cache_hits = {"rewrite": hit_draft, "edit": hit_edit}
     before = audit(article, job, research_pack, source_catalog) if quality_mode else None
     if before:
         write_json(directory / "content-audit-before.json", before)

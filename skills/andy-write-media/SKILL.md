@@ -1,23 +1,13 @@
 ---
 name: andy-write-media
-description: "Generate section-specific real raster images via Codex built-in ImageGen and prepare unique, visually grounded SEO media for Owner review."
+description: "Review and describe existing or owner-supplied images; image/video generation is prohibited by Owner policy."
 ---
-# Andy Write Media R3
+# Andy Write Media — review-only, generation disabled
 
-Input: vetted article draft, section plan and brand policy.
+OWNER RULE from 2026-11-13: Do NOT generate ANY images or videos. This includes Codex ImageGen, OpenAI image/video tools, other APIs, browser generators, local generators, external plugins or substitutes.
 
-1. Use media-plan to prepare a cover plus one distinct H2 scene each.
-2. Use media-generate through the US Mac mini built-in Codex ImageGen. Do not invent an image or quietly use Pillow/SVG/stock substitutes. No independent image API Key needed.
-3. The generation agent must view actual image pixels and record visible objects, scene relevance, mismatches and preliminary SEO metadata. A generated file is not a verified file until inspected.
-4. media-import checks actual PNG bytes, dimensions, SHA-256 and metadata. Reject missing/mismatched images and duplicate Alt text.
-5. media-export retains original PNGs and creates smaller WebP review copies plus a captioned Markdown preview.
-6. Label these scenes AI-generated illustrations, not actual shipped product, factory photos or customer reviews.
-7. Keep human approval pending and prohibit WordPress/Notion publication until a separate Owner approval.
+Allowed without Codex: inspect existing or user-supplied image files, verify file integrity, compare image content with article H2, write accurate independent Title/Alt/Caption/Description based on actual pixels, and package existing files for Owner review.
 
-Commands:
+Denied: calling media-generate (command removed), generating replacement imagery, generating an animation or video, or asking Codex to do anything beyond rewriting a full user-provided article.
 
-    python3 -m andy_write media-generate --job examples/jobs/pairdoll-unboxing.json
-    python3 -m andy_write media-import --job examples/jobs/pairdoll-unboxing.json
-    python3 -m andy_write media-export --job examples/jobs/pairdoll-unboxing.json
-
-The image generation runner is idempotent for already verified local assets. It aborts rather than overwriting an existing image with no visual review record.
+Existing seven AI-generated R3 sample images are historical artifacts, not authorization to continue creation. They remain unapproved until human review. No WordPress upload or publication without independent permission.

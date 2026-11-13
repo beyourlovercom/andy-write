@@ -142,6 +142,8 @@ class TestTargetedChapterWorkflow(unittest.TestCase):
             "brand":"pairdoll",
             "brand_domain":"pairdoll.com",
             "quality_profile":"people_first",
+            "source_path":"owner-source.md",
+            "source_url":"https://example.com/owner-reference",
         }
         all_sections = split_sections(sample)
         chosen = [
@@ -163,9 +165,15 @@ class TestTargetedChapterWorkflow(unittest.TestCase):
         with TemporaryDirectory() as folder:
             dest = pathlib.Path(folder)
             (dest/"writing-prompt.md").write_text("Grounded draft context")
+            original = dest / "owner-source.md"
+            original.write_text(sample, encoding="utf-8")
+            from andy_write.io import hashtext
+            (dest/"run-manifest.json").write_text(
+                json.dumps({"source_sha256":hashtext(sample)}))
             (dest/"research-pack.json").write_text(json.dumps(source))
             (dest/"source-catalog.json").write_text(json.dumps(segments))
             with patch("andy_write.codex_cli.outdir", return_value=dest):
+              with patch("andy_write.usage_policy.resolved", return_value=original):
                 with patch("andy_write.codex_cli.run_model",
                     side_effect=[fake_result(sample), fake_result(sample), fake_result(fragments)]) as model:
                     output = run_writing(job,target=word_count(sample),tolerance=.12,max_revisions=1)

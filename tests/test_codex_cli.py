@@ -48,7 +48,17 @@ class TestR2Codex(unittest.TestCase):
         self.directory = pathlib.Path(self.temp.name)
         (self.directory / "writing-prompt.md").write_text(
             "Create a source-grounded checklist based on a supplied article.")
-        self.job = {"job_id": "test-unboxing", "brand": "pairdoll"}
+        self.source = self.directory / "owner-source.md"
+        self.source.write_text(article(length=2),encoding="utf-8")
+        from andy_write.io import hashtext
+        (self.directory/"run-manifest.json").write_text(
+            json.dumps({"source_sha256":hashtext(self.source.read_text(encoding="utf-8"))}))
+        self.job = {"job_id": "test-unboxing", "brand": "pairdoll",
+                    "source_path": "owner-source.md",
+                    "source_url": "https://example.com/owner-article"}
+        resolver = patch("andy_write.usage_policy.resolved",return_value=self.source)
+        resolver.start()
+        self.addCleanup(resolver.stop)
 
     def test_model_is_gpt61_and_version_gate(self):
         self.assertEqual(DEFAULT_MODEL, "gpt-6.1-terra")
@@ -71,7 +81,7 @@ class TestR2Codex(unittest.TestCase):
                 second = run_writing(self.job, target=words, tolerance=0.05)
         self.assertEqual(first["status"], "RULE_CHECK_PASS")
         self.assertEqual(api.call_count, 2)  # first draft and edit, no re-call
-        self.assertEqual(second["cache_hits"], {"draft": True, "edit": True})
+        self.assertEqual(second["cache_hits"], {"rewrite": True, "edit": True})
         use = summarize_usage(self.directory)
         self.assertEqual(use["calls_completed"], 2)
         self.assertEqual(use["totals"]["input_tokens"], 2022)
@@ -96,18 +106,18 @@ class TestR2Codex(unittest.TestCase):
         with patch("andy_write.codex_cli.run_model",
                    side_effect=RuntimeError("Quota exhausted")):
             with self.assertRaisesRegex(RuntimeError, "Quota exhausted"):
-                invoke_stage(self.job, "draft", "prompt", DEFAULT_MODEL, self.directory)
+                invoke_stage(self.job, "rewrite", "prompt", DEFAULT_MODEL, self.directory)
         data = summarize_usage(self.directory)
         self.assertEqual(data["calls_failed"], 1)
         self.assertEqual(data["calls_completed"], 0)
-        self.assertFalse((self.directory / "article-auto-draft.md").exists())
+        self.assertFalse((self.directory / "article-auto-rewrite.md").exists())
 
     def test_ledger_does_not_double_count_cached_stage(self):
         body = article()
         with patch("andy_write.codex_cli.run_model",
                    return_value=fake_result(body)) as api:
-            invoke_stage(self.job, "draft", "prompt", DEFAULT_MODEL, self.directory)
-            invoke_stage(self.job, "draft", "prompt", DEFAULT_MODEL, self.directory)
+            invoke_stage(self.job, "rewrite", "prompt", DEFAULT_MODEL, self.directory)
+            invoke_stage(self.job, "rewrite", "prompt", DEFAULT_MODEL, self.directory)
         self.assertEqual(api.call_count, 1)
         self.assertEqual(summarize_usage(self.directory)["calls_completed"], 1)
 
@@ -121,14 +131,15 @@ class TestReferenceVersionGuard(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             d = pathlib.Path(tmp)
             f = d / "source.md"
-            f.write_text("updated reference", encoding="utf-8")
+            f.write_text(article(length=2), encoding="utf-8")
             (d / "writing-prompt.md").write_text("previous text")
             (d / "run-manifest.json").write_text(json.dumps({
                 "source_sha256": hashtext("old reference")}))
-            job = {"job_id": "guard-test", "brand": "pairdoll", "source_path": "fake-source"}
+            job = {"job_id": "guard-test", "brand": "pairdoll",
+                   "source_path": "fake-source", "source_url": "https://example.com/owner"}
             with patch("andy_write.codex_cli.outdir", return_value=d):
-                with patch("andy_write.codex_cli.resolved", return_value=f):
+                with patch("andy_write.usage_policy.resolved", return_value=f):
                     with patch("andy_write.codex_cli.run_model") as model:
-                        with self.assertRaisesRegex(RuntimeError, "Reference source changed"):
+                        with self.assertRaisesRegex(PermissionError, "Source changed"):
                             run_writing(job)
                         model.assert_not_called()

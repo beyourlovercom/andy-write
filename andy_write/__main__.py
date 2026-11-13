@@ -16,7 +16,6 @@ from .content_quality import audit
 from .media import plan_media, verify_media_manifest
 from .media_workflow import import_observations, review_ready
 from .media_export import export_review_preview
-from .imagegen_runner import run_imagegen
 
 def run(job: dict):
     out = outdir(job)
@@ -147,16 +146,6 @@ def media_export(job: dict):
     result = export_review_preview(job, article.read_text(encoding="utf-8"))
     print(json.dumps(result, indent=2))
 
-def media_generate(job: dict):
-    out = outdir(job)
-    article = out / "article-auto-final.md"
-    if not article.is_file():
-        raise RuntimeError("Local article candidate missing")
-    result = run_imagegen(job, article.read_text(encoding="utf-8"))
-    print(json.dumps(result, indent=2))
-    if result["status"] == "CACHE_HIT":
-        print("Existing images reused. Run media-import and media-export for review.")
-
 def benchmark(job: dict):
     bench = scrape_qc_metrics()
     dest = outdir(job) / "benchmark.json"
@@ -170,7 +159,7 @@ def benchmark(job: dict):
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Andy Write V1.0 R0–R2")
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("run", "write", "pipeline", "usage", "review", "quality", "media-plan", "media-import", "media-export", "media-generate", "benchmark"):
+    for name in ("run", "write", "pipeline", "usage", "review", "quality", "media-plan", "media-import", "media-export", "benchmark"):
         sp = sub.add_parser(name)
         sp.add_argument("--job", required=True)
         if name in ("write", "pipeline"):
@@ -200,8 +189,6 @@ def main(argv: list[str] | None = None) -> int:
             media_import(job)
         elif args.command == "media-export":
             media_export(job)
-        elif args.command == "media-generate":
-            media_generate(job)
         elif args.command == "usage":
             print(json.dumps(summarize_usage(outdir(job)), indent=2))
         elif args.command == "benchmark":

@@ -1,3 +1,5 @@
+> **Owner P0 update, 2026-11-13:** Codex CLI is reserved strictly for rewriting existing user-supplied full articles. All image/video generation is prohibited. Earlier imagegen instructions in this historical document have been superseded. See docs/owner-policy-2026-11-13.md.
+
 # Andy Write R3 ImageGen UAT — November 13, 2026
 
 ## Production boundary

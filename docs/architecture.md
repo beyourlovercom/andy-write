@@ -1,3 +1,5 @@
+> **Owner P0 update, 2026-11-13:** Codex CLI is reserved strictly for rewriting existing user-supplied full articles. All image/video generation is prohibited. Earlier imagegen instructions in this historical document have been superseded. See docs/owner-policy-2026-11-13.md.
+
 # Andy Write V1.0 architecture — R0–R2
 
 ## Orchestrator and contracts
@@ -47,8 +49,8 @@ R3 Media generation + title/alt/caption/description after visual verification; q
 - Quality audit verifies practical sections, avoids filler, requires grounded source detail only when it actually appeared in the supplied original, validates contextual links against the retrieval record, checks the three-part intro with a bold direct answer.
 - When only particular H2s fail, the bounded Codex rewrite response must name the same H2s. The patcher replaces only those bodies and leaves everything else untouched.
 - Image planning exports one cover and one per H2 task, but no SEO title, alt, caption, or description is filled until actual image creation and human/vision inspection. Hash and review are required for future media readiness.
-- These checks are **heuristics**, not factual verification or any AI-origin scoring. Human editorial review remains required. R3 full image generation and publication are pending.
+- These checks are **heuristics**, not factual verification or any AI-origin scoring. Human editorial review remains required. R3 new image/video generation is expressly prohibited; publication is separately gated.
 
-## R3 real image workflow
+## R3 media — current Owner P0 restriction
 
-Codex built-in ImageGen creates the real PNG outputs on US Mac mini with ChatGPT login; the batch runner skips files already accompanied by matching visual observations. Import validates file bytes, dimensions, checksum, actual scene description and unique SEO fields. Export creates smaller WebP review copies with AI-generated illustration labels. Never treat machine vision as Owner approval. No WordPress media upload is part of this stage.
+Image and video GENERATION are disabled as of 2026-11-13, with no provider fallback. The historical seven-image UAT remains in git history and local archived data but the Codex ImageGen runner and media-generate command have been removed. R3 now only handles placement planning, image integrity/metadata checks and inspection of existing/user-provided assets, without invoking Codex. See docs/owner-policy-2026-11-13.md.
