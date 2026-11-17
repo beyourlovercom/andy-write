@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+from andy_write import article_scope as scope_gate
 from andy_write.codex_cli import (
     DEFAULT_MODEL, append_ledger, codex_version, invoke_stage, run_writing,
     summarize_usage, word_count, word_range
@@ -54,16 +55,34 @@ class TestR2Codex(unittest.TestCase):
         (self.directory/"run-manifest.json").write_text(
             json.dumps({"source_sha256":hashtext(self.source.read_text(encoding="utf-8"))}))
         self.job = {"job_id": "test-unboxing", "brand": "pairdoll",
+                    "topic": "doll unboxing", "target_title": "Safe Unboxing",
                     "source_path": "owner-source.md",
-                    "source_url": "https://example.com/owner-article"}
+                    "source_url": "https://example.com/owner-article",
+                    "research_urls": [],
+                    "article_scope": {"subject": "sex doll unboxing",
+                        "primary_product": "sex doll", "excluded_primary_products": [],
+                        "article_time_window": {"start": None, "end": None},
+                        "qc_time_window": {"start": None, "end": None},
+                        "qc_structure_urls": [], "allow_explicit_comparison": False}}
+        policy = self.directory / "policy" / "owner_rules.json"
+        policy.parent.mkdir(parents=True)
+        policy.write_text(json.dumps({"priority": "OWNER_P0", "version": "owner-p0-v1.1.0",
+                                     "scope_contract_required": True}))
+        for attribute, value in (("ROOT", self.directory), ("resolved", lambda _: self.source)):
+            binding = patch.object(scope_gate, attribute, value)
+            binding.start()
+            self.addCleanup(binding.stop)
+        frozen = scope_gate.ensure_article_scope(self.job, allow_create=True)
         from andy_write.rewrite_contract import source_envelope, CONTRACT_VERSION
-        prompt = "Source-grounded rewrite.\n" + source_envelope(
+        prompt = scope_gate.scope_prompt_header(frozen) + "\nSource-grounded rewrite.\n" + source_envelope(
             self.source.read_text(encoding="utf-8"), self.job["source_url"])
         (self.directory / "writing-prompt.md").write_text(prompt, encoding="utf-8")
         (self.directory / "run-manifest.json").write_text(
             json.dumps({"source_sha256": hashtext(self.source.read_text(encoding="utf-8")),
                         "writing_prompt_sha256": hashtext(prompt),
-                        "rewrite_source_contract_version": CONTRACT_VERSION}))
+                        "rewrite_source_contract_version": CONTRACT_VERSION,
+                        "article_scope_version": scope_gate.VERSION,
+                        "article_scope_fingerprint": frozen["scope_fingerprint"]}))
         resolver = patch("andy_write.usage_policy.resolved",return_value=self.source)
         resolver.start()
         self.addCleanup(resolver.stop)
@@ -141,7 +160,7 @@ if __name__ == "__main__":
     unittest.main()
 
 class TestReferenceVersionGuard(unittest.TestCase):
-    def test_source_changed_requires_research_rerun(self):
+    def test_unscoped_legacy_job_blocked_before_model_call(self):
         from andy_write.codex_cli import run_writing
         from andy_write.io import hashtext
         with tempfile.TemporaryDirectory() as tmp:
@@ -156,6 +175,6 @@ class TestReferenceVersionGuard(unittest.TestCase):
             with patch("andy_write.codex_cli.outdir", return_value=d):
                 with patch("andy_write.usage_policy.resolved", return_value=f):
                     with patch("andy_write.codex_cli.run_model") as model:
-                        with self.assertRaisesRegex(PermissionError, "Source changed"):
+                        with self.assertRaisesRegex(PermissionError, "article_scope"):
                             run_writing(job)
                         model.assert_not_called()

@@ -18,6 +18,7 @@ from .io import ROOT, hashtext, now, outdir, resolved, write_json
 from .review import check
 from .usage_policy import permit_codex_stage, verified_source_article
 from .rewrite_contract import validate_prepared_prompt
+from .article_scope import ensure_article_scope, verify_generated_draft
 from .fidelity import inspect_fidelity, review_sheet
 from .claim_evidence import trace_claims, claim_review_sheet
 from .content_quality import (audit, review_targets, split_sections,
@@ -476,6 +477,7 @@ def run_writing(
         write_json(directory / "content-audit-after.json", after)
     count = word_count(article)
     within = low <= count <= high
+    verify_generated_draft(ensure_article_scope(job), article)
     (directory / "article-auto-final.md").write_text(article + "\n", encoding="utf-8")
     # Automatic offline fidelity mapping is independent of Codex and is NEVER
     # allowed to claim human semantic or factual approval.

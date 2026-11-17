@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 from andy_write.io import hashtext
+from andy_write import article_scope as scope_gate
 from andy_write.rewrite_contract import (
     CONTRACT_VERSION, START, END, MAX_SOURCE_CHARACTERS,
     source_envelope, enforce_complete_source,
@@ -27,7 +28,27 @@ class SourcePromptContractTests(unittest.TestCase):
         self.url = "https://example.com/owner-real-article"
         self.job = {"job_id": "source-contract", "brand": "pairdoll",
                     "topic": "delivery inspection", "target_title": "What to check",
-                    "source_url": self.url, "source_path": "source.md"}
+                    "source_url": self.url, "source_path": "source.md",
+                    "research_urls":[],
+                    "article_scope":{"subject":"delivery inspection",
+                        "primary_product":"sex doll", "excluded_primary_products":[],
+                        "article_time_window":{"start":None,"end":None},
+                        "qc_time_window":{"start":None,"end":None},
+                        "qc_structure_urls":[], "allow_explicit_comparison":False}}
+        self.scope_temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.scope_temp.cleanup)
+        base = pathlib.Path(self.scope_temp.name)
+        original_file = base / "source.md"
+        original_file.write_text(self.original, encoding="utf-8")
+        policy_file = base / "policy" / "owner_rules.json"
+        policy_file.parent.mkdir(parents=True)
+        policy_file.write_text(json.dumps({"priority":"OWNER_P0", "version":"owner-p0-v1.1.0",
+                                           "scope_contract_required":True}))
+        for attribute,value in (("ROOT",base),("resolved",lambda _:original_file)):
+            binding=patch.object(scope_gate,attribute,value)
+            binding.start()
+            self.addCleanup(binding.stop)
+        self.scope_record=scope_gate.ensure_article_scope(self.job,allow_create=True)
         self.catalog = classify(self.original, self.url)
         self.prompt = prepare_prompt(self.job, self.original, "## Outline",
                                      self.catalog, {"claims": []})

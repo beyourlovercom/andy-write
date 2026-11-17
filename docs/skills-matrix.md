@@ -2,6 +2,7 @@
 
 | Module | Public upstream | Current integration | Remaining gate |
 |---|---|---|---|
+| Article Scope / Owner P0 | Andy Write custom `ANDY_WRITE_ARTICLE_SCOPE_V1` | Frozen per-job contract, pre-model gates, date/product/role checks, fail-closed on changes | Owner UAT and PR approval |
 | Research | SerpApi official skills / MCP | Independent live adapter implemented, no SERPAPI_API_KEY configured | Live Google response + attribution UAT |
 | Source | Crawl4AI / Firecrawl | Stdlib paragraph/topic classifier, curated HTTPS fetch | Deep extraction, citation span validation |
 | Outline | marketingskills/content-strategy | Native question-H2 Markdown builder and section contract | Generalize section mapping beyond canary |

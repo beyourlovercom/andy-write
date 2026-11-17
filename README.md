@@ -6,6 +6,8 @@
 - **EVIDENCE_BASED / 数据驱动：** 以真实原文、QC 基准和可复现指标验收，不把 AI 检测率当作内容质量指标。
 - **VERSION_ROLLBACK / 版本可回退：** 每次升级必须经过 PR、自动测试、UAT、回退记录和 Owner 合并授权。
 
+- **SCOPE_INTEGRITY / 初始任务范围不可篡改：** 每篇文章先冻结独立 Scope Contract；后续模型和素材不得更改主题、产品、日期、来源身份或事实证据，发现冲突必须暂停并报告。
+
 Codex CLI 仅限改写用户提供的完整文章；所有图片、视频生成均禁用。
 
 最高级规则已在 `main` 生效，验证命令：`python3 scripts/check_owner_rules.py`。

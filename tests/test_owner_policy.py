@@ -53,13 +53,13 @@ class OwnerScopeRegression(unittest.TestCase):
                                  pathlib.Path(directory))
                 model.assert_not_called()
 
-    def test_codex_requires_source_even_if_prompt_exists(self):
+    def test_codex_requires_scope_even_if_prompt_exists(self):
         with tempfile.TemporaryDirectory() as tmp:
             d=pathlib.Path(tmp)
             (d/"writing-prompt.md").write_text("Rewrite article")
             with patch("andy_write.codex_cli.outdir",return_value=d):
                 with patch("andy_write.codex_cli.run_model") as model:
-                    with self.assertRaisesRegex(PermissionError,"user-supplied"):
+                    with self.assertRaisesRegex(PermissionError,"article_scope"):
                         run_writing({"job_id":"job-without-original"})
                     model.assert_not_called()
 

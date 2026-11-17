@@ -10,6 +10,10 @@ from .source import classify, evidence
 from .outline import section_plan, markdown_outline
 from .llm import prepare_prompt, write_openai
 from .rewrite_contract import CONTRACT_VERSION, validate_prepared_prompt
+from .article_scope import (VERSION as ARTICLE_SCOPE_VERSION, contract_path,
+                            ensure_article_scope, verify_article_input,
+                            scope_prompt_header, validate_qc_candidate,
+                            verify_generated_draft)
 from .fidelity import inspect_fidelity, review_sheet
 from .qc_reverse import html_qc_profile, markdown_qc_profile, compare_structure, skill_gap_actions
 from .qc_goldset import write_goldset
@@ -28,6 +32,8 @@ from .media_workflow import import_observations, review_ready
 from .media_export import export_review_preview
 
 def run(job: dict):
+    scope = ensure_article_scope(job, allow_create=True)
+    verify_article_input(job, scope)
     out = outdir(job)
     original = resolved(job["source_path"]).read_text(encoding="utf-8")
     pack, was_cached = cached_research(job, out)
@@ -35,7 +41,7 @@ def run(job: dict):
     ledger = evidence(pack, catalog)
     sections = section_plan(job, catalog, original)
     outline = markdown_outline(job, sections, ledger)
-    prompt = prepare_prompt(job, original, outline, catalog, ledger)
+    prompt = scope_prompt_header(scope) + "\n" + prepare_prompt(job, original, outline, catalog, ledger)
     write_json(out / "research-pack.json", pack)
     write_json(out / "source-catalog.json", catalog)
     write_json(out / "evidence-ledger.json", ledger)
@@ -46,6 +52,8 @@ def run(job: dict):
         "job_id": job["job_id"], "created_at": now(), "source_sha256": hashtext(original),
         "writing_prompt_sha256": hashtext(prompt),
         "rewrite_source_contract_version": CONTRACT_VERSION,
+        "article_scope_version": ARTICLE_SCOPE_VERSION,
+        "article_scope_fingerprint": scope["scope_fingerprint"],
         "research_mode": pack["collection_mode"], "research_cache_hit": was_cached,
         "steps_completed": ["R1 Research", "R1 Source", "R2 Outline", "R2 Prompt"],
         "prose_status": "NOT_GENERATED_BY_THIS_COMMAND", "wordpress_status": "UNTOUCHED"
@@ -59,6 +67,7 @@ def run(job: dict):
 
 def write(job: dict, model: str | None, provider: str, target: int,
           tolerance: float, max_revisions: int, force: bool):
+    verify_article_input(job, ensure_article_scope(job))
     out = outdir(job)
     prompt_path = out / "writing-prompt.md"
     if not prompt_path.is_file():
@@ -80,6 +89,7 @@ def write(job: dict, model: str | None, provider: str, target: int,
     if provider == "openai":
         full_prompt, source_receipt = validate_prepared_prompt(job, out)
         draft, receipt = write_openai(full_prompt, model or "gpt-6.1-terra")
+        verify_generated_draft(ensure_article_scope(job), draft)
         receipt["source_contract"] = source_receipt
         original = verified_source_article(job, out)
         mapping = inspect_fidelity(original, draft, source_ref=job["source_url"])
@@ -111,6 +121,7 @@ def review(job: dict, path: str):
     dest = resolved(path)
     if not dest.is_file():
         raise FileNotFoundError(str(dest))
+    verify_generated_draft(ensure_article_scope(job), dest.read_text(encoding="utf-8"))
     result = check(dest.read_text(encoding="utf-8"), job)
     output = outdir(job) / ("review-" + dest.stem + ".json")
     write_json(output, result)
@@ -122,6 +133,7 @@ def quality(job: dict, path: str):
     article_path = resolved(path)
     if not article_path.is_file():
         raise FileNotFoundError(str(article_path))
+    verify_generated_draft(ensure_article_scope(job), article_path.read_text(encoding="utf-8"))
     out = outdir(job)
     research_path, source_path = out / "research-pack.json", out / "source-catalog.json"
     pack = json.loads(research_path.read_text(encoding="utf-8")) if research_path.is_file() else None
@@ -407,7 +419,9 @@ def qc_profile(post_file: str, draft_file: str, report_file: str,
     },indent=2))
 
 def benchmark(job: dict):
-    bench = scrape_qc_metrics()
+    scope = ensure_article_scope(job)
+    verify_article_input(job, scope)
+    bench = scrape_qc_metrics(contract=scope)
     dest = outdir(job) / "benchmark.json"
     article = outdir(job) / "article-v2.md"
     if article.exists():
@@ -419,7 +433,7 @@ def benchmark(job: dict):
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Andy Write V1.0 R0–R2")
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("run", "write", "pipeline", "usage", "review", "quality", "media-plan", "media-import", "media-export", "benchmark"):
+    for name in ("scope-init", "run", "write", "pipeline", "usage", "review", "quality", "media-plan", "media-import", "media-export", "benchmark"):
         sp = sub.add_parser(name)
         sp.add_argument("--job", required=True)
         if name in ("write", "pipeline"):
@@ -516,6 +530,14 @@ def main(argv: list[str] | None = None) -> int:
             fidelity(args.source, args.draft, args.report, args.notes)
             return 0
         job = read_job(args.job)
+        scope = ensure_article_scope(job, allow_create=args.command in ("scope-init", "run", "pipeline"))
+        verify_article_input(job, scope)
+        if args.command == "scope-init":
+            print(json.dumps({"status": "FROZEN", "version": ARTICLE_SCOPE_VERSION,
+                              "job_id": job["job_id"], "revision": scope["revision"],
+                              "contract_path": str(contract_path(job)),
+                              "fingerprint": scope["scope_fingerprint"]}, indent=2))
+            return 0
         if args.command in ("run", "pipeline"):
             run(job)
         if args.command in ("write", "pipeline"):

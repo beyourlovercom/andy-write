@@ -8,12 +8,17 @@ from html import unescape
 from .io import now
 from .research import validate_public_url
 from .review import metrics
+from .article_scope import ScopeConflict, validate_qc_candidate
 
 QC_API = ("https://kissself.com/wp-json/wp/v2/posts?"
           "after=2025-11-01T00:00:00&before=2026-01-01T00:00:00"
           "&per_page=100&_fields=id,title,content,link,date")
 
-def scrape_qc_metrics() -> dict:
+def scrape_qc_metrics(*, contract: dict) -> dict:
+    scope = contract["scope"]
+    approved_urls = set(scope["source_roles"]["QC_STRUCTURE_ONLY"])
+    if not approved_urls:
+        raise ScopeConflict("QC_STRUCTURAL_SOURCES_MISSING: per-article approved URLs required")
     validate_public_url(QC_API)
     proc = subprocess.run(["curl", "-L", "--proto", "=https", "--proto-redir", "=https",
                             "--silent", "--show-error", "--fail-with-body", "--max-time", "40",
@@ -26,29 +31,36 @@ def scrape_qc_metrics() -> dict:
         raise RuntimeError("Unexpected QC API result; refusing to fabricate benchmark")
     samples = []
     for row in rows:
-        if not (row["date"][:7] in ("2025-11", "2025-12")):
+        if row.get("link") not in approved_urls:
             continue
+        title = unescape(re.sub(r"<[^>]*>", "", row["title"]["rendered"]))
+        excluded_match = next((item for item in scope["excluded_primary_products"]
+                               if item.casefold() in title.casefold()), None)
+        validate_qc_candidate(contract, url=row["link"], publication_date=row["date"],
+                              declared_product=excluded_match)
         html = row["content"]["rendered"]
         clean = unescape(re.sub(r"<[^>]*>", " ", html))
         text = " ".join(clean.split())
         samples.append({"id": row["id"], "date": row["date"][:10],
-                        "title": unescape(re.sub(r"<[^>]*>", "", row["title"]["rendered"])),
+                        "title": title,
                         "url": row["link"], "words": len(re.findall(r"\b[\w'-]+\b", text)),
                         "h2": len(re.findall(r"<h2[ >]", html, re.I)),
                         "h3": len(re.findall(r"<h3[ >]", html, re.I)),
                         "tables": len(re.findall(r"<table[ >]", html, re.I)),
                         "images": len(re.findall(r"<img\b", html, re.I)),
                         "has_faq": bool(re.search(r"<h2[^>]*>\s*FAQ", html, re.I))})
+    if not samples:
+        raise ScopeConflict("QC_APPROVED_SAMPLE_EMPTY: no approved product/date-compatible QC articles")
     def med(name):
         return statistics.median(s[name] for s in samples) if samples else None
     return {"source": QC_API, "collection": "public_wordpress_rest_read_only",
             "model_provenance": "QC attribution reported by website owner; not independently verified",
-            "scope": "2025-11-01 to 2025-12-31 inclusive", "sample_count": len(samples),
+            "scope": scope["qc_time_window"], "sample_count": len(samples),
             "collected_at": now(),
             "median": {k: med(k) for k in ("words", "h2", "h3", "tables", "images")},
             "faq_count": sum(s["has_faq"] for s in samples),
             "representative": [{"id": r["id"], "date": r["date"], "title": r["title"], "url": r["url"]}
-               for r in samples if "Sex Doll" in r["title"] or "How Do I Know If My Lube" in r["title"]][:5],
+               for r in samples][:5],
             "note": "Derived metadata only. No QC article body stored or reused."}
 
 def compare_draft(benchmark: dict, article: str) -> dict:
