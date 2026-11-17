@@ -116,6 +116,9 @@ def ensure_article_scope(job: dict, *, allow_create: bool = False) -> dict:
     if policy.get("priority") != "OWNER_P0" or policy.get("scope_contract_required") is not True:
         raise ScopeConflict("Owner P0 SCOPE_INTEGRITY policy is missing or disabled")
     proposal = _declaration(job)
+    # Validate the actual original BEFORE the first exclusive freeze. A bad
+    # source must not create an unusable, falsely approved frozen contract.
+    verify_article_input(job, {"scope": proposal})
     fingerprint = hashtext(json.dumps(proposal, ensure_ascii=False, sort_keys=True))
     path = contract_path(job)
     if not path.exists():

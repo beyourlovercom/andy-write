@@ -64,6 +64,7 @@ class ArticleScopeTests(unittest.TestCase):
         other["article_scope"] = {**self.job["article_scope"],
             "subject": "sex doll torso maintenance", "primary_product": "sex doll torso",
             "excluded_primary_products": ["full-size sex doll"]}
+        self.original.write_text("# Sex Doll Torso Maintenance\n\n" + "Synthetic details. " * 200)
         second = gate.ensure_article_scope(other, allow_create=True)
         self.assertNotEqual(gate.contract_path(self.job), gate.contract_path(other))
         self.assertNotEqual(first["scope_fingerprint"], second["scope_fingerprint"])
@@ -71,8 +72,7 @@ class ArticleScopeTests(unittest.TestCase):
     def test_scope_edit_requires_owner_process(self):
         gate.ensure_article_scope(self.job, allow_create=True)
         altered = json.loads(json.dumps(self.job))
-        altered["article_scope"]["primary_product"] = "sex doll torso"
-        altered["article_scope"]["excluded_primary_products"] = ["full-size sex doll"]
+        altered["article_scope"]["subject"] = "unapproved expanded product scope"
         with self.assertRaisesRegex(gate.ScopeConflict, "ARTICLE_SCOPE_CHANGED"):
             gate.ensure_article_scope(altered, allow_create=True)
 
@@ -88,9 +88,9 @@ class ArticleScopeTests(unittest.TestCase):
 
     def test_torso_original_rejected_for_fullsize(self):
         self.original.write_text("# How to Enjoy Your Sex Doll Torso\n" + "Data. " * 200)
-        record = gate.ensure_article_scope(self.job, allow_create=True)
         with self.assertRaisesRegex(gate.ScopeConflict, "SOURCE_PRODUCT_MISMATCH"):
-            gate.verify_article_input(self.job, record)
+            gate.ensure_article_scope(self.job, allow_create=True)
+        self.assertFalse(gate.contract_path(self.job).exists())
 
     def test_comparison_is_not_naively_prohibited(self):
         self.original.write_text("# Full-Size Versus Torso Comparison\n" + "Data. " * 200)
