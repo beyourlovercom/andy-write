@@ -1,5 +1,5 @@
 {
-  "version": "owner-p0-v1.0.0",
+  "version": "owner-p0-v1.1.0",
   "effective_date": "2026-11-13",
   "priority": "OWNER_P0",
   "scope": "andy-write",
@@ -33,6 +33,20 @@
         "rollback_ref",
         "owner_merge_approval"
       ]
+    },
+    {
+      "id": "SCOPE_INTEGRITY",
+      "label": "初始任务范围不可篡改",
+      "requires": [
+        "task_scope_contract_before_research",
+        "product_identity_and_exclusions",
+        "time_window_and_source_roles",
+        "claim_level_relevant_evidence",
+        "stop_and_report_conflicts",
+        "owner_approved_scope_change"
+      ],
+      "unapproved_scope_expansion_allowed": false,
+      "paraphrase_to_hide_conflict_allowed": false
     }
   ],
   "codex_cli_allowed_purpose": "rewrite_existing_user_supplied_article_only",
@@ -40,5 +54,9 @@
   "image_generation_enabled": false,
   "video_generation_enabled": false,
   "auto_merge_allowed": false,
-  "production_auto_publish_allowed": false
+  "production_auto_publish_allowed": false,
+  "updated_date": "2026-11-17",
+  "scope_contract_required": true,
+  "stop_affected_operation_on_conflict": true,
+  "new_scope_requires_owner_approval": true
 }
