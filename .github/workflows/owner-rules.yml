@@ -3,7 +3,7 @@ on:
   push:
     branches: [main, "feat/**", "policy/**"]
   pull_request:
-    branches: [main]
+    branches: [main, "feat/r0-r2-research-writing-mvp"]
 jobs:
   owner-rules:
     runs-on: ubuntu-latest
