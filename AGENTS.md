@@ -14,6 +14,8 @@
 >
 > 如果发现产品对象、时间、来源身份或事实证据与初始约束冲突，必须停止对应操作并报告，不能自行扩大范围，也不能通过改写文字掩盖冲突。
 
+**Implementation: `ANDY_WRITE_ARTICLE_SCOPE_V1`.** Every new article must have an Owner-specified `article_scope` in its own job JSON and a frozen private `.runs/_article_scopes/<job_id>.json` contract before research. Use `python3 -m andy_write scope-init --job PATH` or the normal `run` command. All job-based stages and both rewrite backends validate the same fingerprint; any change stops and requires explicit recorded Owner authorization. Read `skills/andy-write-article-scope/SKILL.md` and `docs/ANDY_WRITE_ARTICLE_SCOPE_V1.md` before downstream article Skills. Existing unscoped articles are not silently backfilled.
+
 Treat a QC structural reference as structural evidence only, never as the Owner's rewrite original or as automatic support for product facts. A full-size doll cannot be silently replaced by a torso; mentioning a torso in an expressly authorized comparison is allowed. Any scope change requires explicit Owner approval and a new version of the Scope Contract.
 
 ## Other binding Owner P0 safety restrictions

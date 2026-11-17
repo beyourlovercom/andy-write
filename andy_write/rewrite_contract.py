@@ -58,7 +58,10 @@ def validate_prepared_prompt(job: dict, directory: "pathlib.Path") -> tuple[str,
     """Shared fail-closed gate for every rewriting backend, before any model call."""
     import json
     from .usage_policy import verified_source_article
+    from .article_scope import VERSION as SCOPE_VERSION, ensure_article_scope, verify_article_input
 
+    scope = ensure_article_scope(job)
+    verify_article_input(job, scope)
     original = verified_source_article(job, directory)
     prompt_path = directory / "writing-prompt.md"
     manifest_path = directory / "run-manifest.json"
@@ -68,6 +71,9 @@ def validate_prepared_prompt(job: dict, directory: "pathlib.Path") -> tuple[str,
     receipt = enforce_complete_source(prompt, original, job["source_url"])
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if (manifest.get("writing_prompt_sha256") != hashtext(prompt)
-        or manifest.get("rewrite_source_contract_version") != CONTRACT_VERSION):
+        or manifest.get("rewrite_source_contract_version") != CONTRACT_VERSION
+        or manifest.get("article_scope_version") != SCOPE_VERSION
+        or manifest.get("article_scope_fingerprint") != scope["scope_fingerprint"]
+        or f"FINGERPRINT={scope['scope_fingerprint']}" not in prompt):
         raise PermissionError("Writing prompt contract or hash is stale; rerun local source/outline")
     return prompt, receipt
