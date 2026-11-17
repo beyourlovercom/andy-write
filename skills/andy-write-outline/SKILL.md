@@ -27,3 +27,12 @@ Do not import KissSelf's section headings as a new article template: only
 its measurable QC structure and topic intent can inform which checks are
 worth including. Never force H3/table/FAQ counts to mimic a competitor.
 No new media, images or videos. No Codex CLI for outline research.
+
+## V1.3 intent-aware QC
+
+Before turning a public benchmark's structure into a reusable review question,
+compare the declared reader intent with the existing Owner article. When they
+differ, record `CROSS_INTENT_STRUCTURE_ONLY`: no H2/H3 count, table count,
+FAQ layout or competing outline becomes a rewrite instruction. For matching
+intents, still require original-source support and an editor's judgment of
+whether a subsection adds new, decision-relevant information.

@@ -82,3 +82,13 @@ Then review material/safety claims from the private evidence queue, each
 with real primary manufacturer/manual sources where appropriate.
 Do not rewrite or score a sealed agriculture holdout until these actual
 human quality gates are met and Owner separately authorizes release.
+
+## V1.3 section information gain review
+
+Review substantial exact sentences repeated across H2 sections, especially
+when the second appearance adds no new condition, exception or decision.
+The offline `CROSS_SECTION_REPETITION_REVIEW` signal contains only a sentence
+hash and section names. It is not a plagiarism finding or a mandatory delete:
+legitimate safety cautions and FAQs may deliberately repeat important advice.
+Judge whether the repetition benefits the specific reader and Owner original.
+No arbitrary word, H3, table or link-density quotas are permitted.

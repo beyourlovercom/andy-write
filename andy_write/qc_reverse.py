@@ -218,17 +218,21 @@ def markdown_qc_profile(article:str,*,source_label:str)->dict:
     }
     return result
 
-def compare_structure(benchmark:dict,ours:dict)->dict:
+def compare_structure(benchmark:dict,ours:dict,
+                      intent_relation:str="NOT_DECLARED_STRUCTURE_ONLY")->dict:
     b=benchmark["structure"]; a=ours["structure"]
     same=["words_approx","h2_count","h3_count","table_count",
           "images_count","images_with_nonempty_alt"]
     return {
         "comparison_type":"STRUCTURAL_ONLY_NOT_QUALITY_OR_RANKING",
+        "intent_relation":intent_relation,
         "benchmark_post_id":benchmark.get("source_post_id"),
         "rows":[{"metric":key,"benchmark":b.get(key),"andy_write":a.get(key),
                  "delta":a[key]-b[key]}
                 for key in same if isinstance(a.get(key),int) and isinstance(b.get(key),int)],
-        "important_context":"Different topics and intent, so absolute structural counts do not establish superiority",
+        "important_context":("Different topics and intent, so absolute structural counts do not establish superiority"
+                             if intent_relation != "SAME_DECLARED_INTENT_HUMAN_REVIEW_REQUIRED" else
+                             "Declared reader intent matches; numerical structure still does not prove quality"),
         "release_gate":"Factual/human source-fidelity review still required"
     }
 

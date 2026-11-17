@@ -71,3 +71,13 @@ PENDING until the true manufacturer and exact document are established.
 An unrelated Owner team article can be byte/hash sealed as an unseen
 test source. Do not inspect it for development, turn its paragraphs into
 examples or use it for training/threshold changes before evaluation gate.
+
+## V1.3 Owner-approved reverse-QC scope (all brands)
+
+Treat a public benchmark as `QC_STRUCTURE_ONLY` and an already-created Owner
+article as `EXISTING_OWNER_ARTICLE`. For reproducible QC use a separately
+approved `ANDY_WRITE_QC_SCOPE_V1` contract with exact HTTPS URL, post ID,
+publication/revision dates and current body SHA-256. Reject missing approval,
+identity/revision drift, source-role substitution and excluded primary topics.
+This is an experiment contract, NOT a new `ANDY_WRITE_ARTICLE_SCOPE_V1` job.
+Keep complete public HTML private; publish only derived counts and hashes.

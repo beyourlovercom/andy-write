@@ -31,3 +31,7 @@ Two real private twelve-case source-to-draft review workbenches, agreement diagn
 ## V1.2.3 sealed blind workflow
 
 Human labels remain 0/12. The private source-claim queue has 52 pending claims, 32 HIGH, without a specific product model. A never-used agricultural manuscript from the team's Drive is SHA-sealed for a later independent holdout; no quality threshold tuning or model rewrite is allowed until real human labels arrive. See docs/v1.2.3-r4-r5-r6-sequenced-uat-2026-11-13.md.
+
+## V1.3 Owner-approved full-size-doll-context reverse QC
+
+The Owner-approved KissSelf sex-doll article (post 26242, current July 2026 revision) is a structural benchmark only, not an Owner original or manufacturer source. A new optional `ANDY_WRITE_QC_SCOPE_V1` contract freezes URL, post ID, content hash, dates, source roles, explicit excluded primary topic and reader intents. Cross-intent comparisons remain structural and non-ranking. A new hashed duplicate-sentence diagnostic flags possible cross-section repetition for human review without auto-deleting useful warnings. Source, Outline, Draft, Editor and Quality Skills are updated generically; original Article Scope V1 and 2025 legacy QC remain backward compatible. 187 offline tests PASS, real article quality approval still PENDING. See docs/kissself-full-doll-r2-r5-reverse-qc-2026-11-17.md.
