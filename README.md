@@ -7,6 +7,7 @@ Independent versioned source-grounded editorial agent Skills.
 - **SKILL_FIRST — Skill 优先:** Fix reusable Skills instead of a single article.
 - **EVIDENCE_BASED — 数据驱动:** Validate with real articles, QC baseline and reproducible metrics; do not rely on AI detector percentages.
 - **VERSION_ROLLBACK — 版本可回退:** PR, automated tests, UAT, preserve previous stable versions and rollback refs.
+- **SCOPE_INTEGRITY — 初始任务范围不可篡改:** Freeze the task definition; stop and report conflicts with subject, dates, source roles, or evidence.
 
 Codex CLI remains strictly limited to rewriting a supplied article. All image and video generation remains disabled.
 

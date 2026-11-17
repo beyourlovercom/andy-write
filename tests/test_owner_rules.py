@@ -28,7 +28,7 @@ class OwnerRulesTests(unittest.TestCase):
         self.assertEqual(check(self.path), [])
         data = json.loads((self.path/"policy/owner_rules.json").read_text())
         self.assertEqual(data["priority"], "OWNER_P0")
-        self.assertEqual(len(data["principles"]), 3)
+        self.assertEqual(len(data["principles"]), 4)
 
     def test_missing_skill_rule_fails(self):
         agents = self.path/"AGENTS.md"
@@ -62,6 +62,34 @@ class OwnerRulesTests(unittest.TestCase):
         data["auto_merge_allowed"] = True
         policy.write_text(json.dumps(data))
         self.assertTrue(any("auto_merge_allowed" in msg for msg in check(self.path)))
+
+    def test_missing_scope_integrity_rule_fails(self):
+        agents = self.path/"AGENTS.md"
+        agents.write_text(agents.read_text().replace("SCOPE_INTEGRITY", "SCOPE_MISSING"))
+        self.assertTrue(any("SCOPE_INTEGRITY" in msg for msg in check(self.path)))
+
+    def test_scope_expansion_flag_cannot_be_enabled(self):
+        policy = self.path/"policy/owner_rules.json"
+        data = json.loads(policy.read_text())
+        scope = next(row for row in data["principles"] if row["id"] == "SCOPE_INTEGRITY")
+        scope["unapproved_scope_expansion_allowed"] = True
+        policy.write_text(json.dumps(data))
+        self.assertTrue(any("unapproved_scope_expansion_allowed" in msg for msg in check(self.path)))
+
+    def test_missing_scope_contract_requirement_fails(self):
+        policy = self.path/"policy/owner_rules.json"
+        data = json.loads(policy.read_text())
+        data["scope_contract_required"] = False
+        policy.write_text(json.dumps(data))
+        self.assertTrue(any("scope_contract_required" in msg for msg in check(self.path)))
+
+    def test_paraphrase_cannot_hide_scope_conflict(self):
+        policy = self.path/"policy/owner_rules.json"
+        data = json.loads(policy.read_text())
+        scope = next(row for row in data["principles"] if row["id"] == "SCOPE_INTEGRITY")
+        scope["paraphrase_to_hide_conflict_allowed"] = True
+        policy.write_text(json.dumps(data))
+        self.assertTrue(any("paraphrase_to_hide_conflict_allowed" in msg for msg in check(self.path)))
 
     def test_missing_pr_template_fails(self):
         (self.path/".github/pull_request_template.md").unlink()
