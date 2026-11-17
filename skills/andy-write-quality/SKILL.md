@@ -112,3 +112,19 @@ checks (52 total) without assuming facts are true. Missing manufacturer
 SKU/model must be explicit. Later run an OTHER-INDUSTRY holdout frozen by
 SHA-256 only after real labels and an explicit Owner unseal decision. Never
 use a blind holdout for threshold or template design.
+
+## V1.3 exact benchmark contract and cross-intent release gate
+
+Use `python3 -m andy_write qc-profile --post-json PRIVATE_JSON --draft
+EXISTING_DRAFT --draft-url OWNER_URL --qc-contract APPROVED_SCOPE_JSON
+--report PRIVATE_REPORT`. The optional contract retains old lab compatibility,
+but a legacy unscoped run is NEVER treated as an approved QC sample. Require
+exact benchmark version hash, URL, post ID and dates, separate source roles,
+declared product and reader intents, and exclusion checks. A cross-intent
+benchmark can identify review questions only, not prove the Owner draft worse.
+
+Track content-information gain through source-supported decisions, caveats
+and exact duplicate-sentence review; do not derive a quality target from a
+competitor's 26 H3, 6 tables, link volume or apparent word count. Keep all
+factual/semantic PASS decisions human-reviewed. Regression:
+`python3 -m unittest tests.test_qc_scope tests.test_qc_reverse -v`.

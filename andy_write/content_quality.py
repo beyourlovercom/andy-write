@@ -9,7 +9,7 @@ from collections import Counter
 import json
 import re
 from urllib.parse import urlsplit
-from .io import now
+from .io import now, hashtext
 from .qc_reverse import score_paragraph_risks
 
 EMPTY_PHRASES = (
@@ -42,6 +42,28 @@ MARKDOWN_LINK = re.compile(r"\]\((https?://[^)\s]+)\)")
 def split_sections(article: str) -> list[dict]:
     return [{"heading": m.group(1).strip(), "body": m.group(2).strip()}
             for m in BODY_SECTIONS.finditer(article)]
+
+
+def repeated_section_information(article: str) -> list[dict]:
+    """Find substantial exact sentence reuse across H2s for editor review.
+
+    Exact duplication is observable; whether repeating a warning or a
+    comparison adds value is a human decision. Never publish copied prose in
+    the derived report or turn the count into a quality score.
+    """
+    seen: dict[str, list[str]] = {}
+    for section in split_sections(article):
+        prose = re.sub(r"(?m)^\s*(?:\|.*\||[-*] |\d+[.)] )", "", section["body"])
+        for sentence in re.split(r"(?<=[.!?])\s+|\n+", prose):
+            normalized = " ".join(re.findall(r"[a-z0-9]+", sentence.casefold()))
+            if len(normalized.split()) < 12:
+                continue
+            headings = seen.setdefault(normalized, [])
+            if section["heading"] not in headings:
+                headings.append(section["heading"])
+    return [{"sentence_sha256": hashtext(sentence), "headings": heads,
+             "human_review_required": True}
+            for sentence, heads in seen.items() if len(heads) > 1]
 
 def edit_sections(original: str, replacements: dict[str, str]) -> str:
     """Patch only requested H2 bodies; all unrelated sections stay byte-identical."""
@@ -121,6 +143,11 @@ def audit(article: str, job: dict, research_pack: dict | None = None,
         for m in re.finditer(pattern, article, re.I):
             issues.append({"code": "SOURCELESS_AUTHORITY", "severity": "review",
                            "heading": None, "detail": m.group()[:90]})
+    repeats = repeated_section_information(article)
+    for item in repeats:
+        issues.append({"code": "CROSS_SECTION_REPETITION_REVIEW", "severity": "review",
+                       "heading": None, "detail": item["sentence_sha256"],
+                       "headings": item["headings"]})
     introduction = intro_structure(article)
     if introduction["paragraphs"] != 3 or not introduction["direct_answer_bold"]:
         issues.append({"code": "INTRO_STRUCTURE", "severity": "review",
@@ -199,6 +226,7 @@ def audit(article: str, job: dict, research_pack: dict | None = None,
         "actionable_sections": actionable_sections,
         "total_sections": len(sec),
         "cliche_phrases": clichés,
+        "cross_section_repetitions": repeats,
         "eligible_source_detail_count": len(verified_anchors),
         "source_details_present": sum(
             a.get("term", "").lower() in lower for a in verified_anchors),

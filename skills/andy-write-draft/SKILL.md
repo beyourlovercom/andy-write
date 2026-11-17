@@ -32,3 +32,11 @@ Codex must run read-only, without tool actions, and log real per-turn token coun
 - Use GitHub PR, regression tests, real-reference QC, UAT and an exact rollback ref.
 
 Never commit the user original article or raw run logs. Existing historical outputs remain available for auditing.
+
+## V1.3 QC input separation
+
+The `ANDY_WRITE_QC_SCOPE_V1` contract permits offline comparison of public
+structure with a pre-existing Owner article only. It never creates or revises
+an Article Scope Contract, never authorizes a writing job, and must not enter
+the Codex rewrite prompt as replacement Owner source. A cross-intent QC delta
+can open a Skill/test review ticket but cannot trigger an article rewrite.

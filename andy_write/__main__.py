@@ -16,6 +16,7 @@ from .article_scope import (VERSION as ARTICLE_SCOPE_VERSION, contract_path,
                             verify_generated_draft)
 from .fidelity import inspect_fidelity, review_sheet
 from .qc_reverse import html_qc_profile, markdown_qc_profile, compare_structure, skill_gap_actions
+from .qc_scope import validate_qc_scope
 from .qc_goldset import write_goldset
 from .qc_calibration import calibrate, reviewer_agreement
 from .qc_review_workbench import export_workbench
@@ -372,7 +373,7 @@ def qc_goldset(source_path:str,draft_path:str,report_path:str,size:int):
     print(json.dumps(receipt,indent=2))
 
 def qc_profile(post_file: str, draft_file: str, report_file: str,
-               draft_url: str):
+               draft_url: str, qc_contract: str | None = None):
     """Offline only. A competitor article is a STRUCTURE BENCHMARK, not a writing source."""
     from .io import ROOT
     private = (ROOT / ".runs").resolve()
@@ -388,9 +389,20 @@ def qc_profile(post_file: str, draft_file: str, report_file: str,
         if len(source) != 1:
             raise ValueError("One exact WordPress article required")
         source = source[0]
-    if (not isinstance(source, dict) or
-        not source.get("date","").startswith(("2025-11","2025-12"))):
-        raise ValueError("Benchmark article must have 2025 November/December date")
+    if not isinstance(source, dict):
+        raise ValueError("Benchmark article must be a single WordPress post")
+    if qc_contract:
+        contract = json.loads(resolved(qc_contract).read_text(encoding="utf-8"))
+        scope = validate_qc_scope(source, contract, draft_url)
+    else:
+        # Keep the old lab invocation compatible, but never treat it as an
+        # Owner-approved same-intent benchmark or an article-writing job.
+        if not source.get("date", "").startswith(("2025-11", "2025-12")):
+            raise ValueError("Legacy QC requires a 2025 November/December benchmark")
+        scope = {"status": "UNDECLARED_LEGACY_QC_SCOPE",
+                 "intent_relation": "NOT_DECLARED_STRUCTURE_ONLY",
+                 "release_gate": "OWNER_BENCHMARK_APPROVAL_REQUIRED",
+                 "article_scope_created": False}
     html = source["content"]["rendered"]
     profile = html_qc_profile(html,url=source["link"],date=source["date"],
                               modified=source.get("modified",""),
@@ -400,8 +412,9 @@ def qc_profile(post_file: str, draft_file: str, report_file: str,
     result = {
         "benchmark": profile,
         "andy_write_existing_draft": current,
-        "comparison": compare_structure(profile,current),
+        "comparison": compare_structure(profile,current,scope["intent_relation"]),
         "skill_change_candidates": skill_gap_actions(profile,current),
+        "qc_scope": scope,
         "owner_policy": "SKILL_FIRST + EVIDENCE_BASED + VERSION_ROLLBACK",
         "no_model_calls": True,
         "competitor_rewrite": False,
@@ -414,6 +427,8 @@ def qc_profile(post_file: str, draft_file: str, report_file: str,
         "benchmark_post_id":profile["source_post_id"],
         "first_published":profile["original_publication_date"],
         "modified":profile["last_public_modified"],
+        "qc_scope":scope["status"],
+        "intent_relation":scope["intent_relation"],
         "structure_diff":result["comparison"]["rows"],
         "caveat":result["comparison"]["important_context"]
     },indent=2))
@@ -492,6 +507,8 @@ def main(argv: list[str] | None = None) -> int:
     qa.add_argument("--report", required=True)
     qa.add_argument("--draft-url", required=True,
                     help="URL/host context of existing Owner draft; avoid fixed brand")
+    qa.add_argument("--qc-contract", default=None,
+                    help="Exact Owner-approved benchmark scope; no new article scope is created")
     fv = sub.add_parser("fidelity", help="Offline full-article content mapping; no Codex")
     fv.add_argument("--source", required=True)
     fv.add_argument("--draft", required=True)
@@ -524,7 +541,7 @@ def main(argv: list[str] | None = None) -> int:
             qc_goldset(args.source,args.draft,args.report,args.size)
             return 0
         if args.command == "qc-profile":
-            qc_profile(args.post_json,args.draft,args.report,args.draft_url)
+            qc_profile(args.post_json,args.draft,args.report,args.draft_url,args.qc_contract)
             return 0
         if args.command == "fidelity":
             fidelity(args.source, args.draft, args.report, args.notes)
