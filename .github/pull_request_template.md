@@ -11,6 +11,13 @@
 - Factual/editorial limits:
 - [ ] No AI-detector percentage used as acceptance criterion
 
+## Scope integrity — Owner P0-04
+- Frozen task Scope Contract (subject/product, dates, source roles, claim evidence):
+- Evidence that downstream research and materials preserved the original scope:
+- Conflict/blocked-source reports or "none":
+- Owner approval for any scope amendment (otherwise none):
+- [ ] No unapproved scope expansion or paraphrased conflict concealment
+
 ## Automated tests and UAT
 - Tests and CI results:
 - Real sample UAT:
