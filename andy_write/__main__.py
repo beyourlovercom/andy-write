@@ -30,6 +30,7 @@ from .content_quality import audit
 from .media import plan_media, verify_media_manifest
 from .media_workflow import import_observations, review_ready
 from .media_export import export_review_preview
+from .search_intent_gate import enabled as search_intent_enabled, enforce as enforce_search_intent
 
 def run(job: dict):
     scope = ensure_article_scope(job, allow_create=True)
@@ -37,6 +38,11 @@ def run(job: dict):
     out = outdir(job)
     original = resolved(job["source_path"]).read_text(encoding="utf-8")
     pack, was_cached = cached_research(job, out)
+    # R7 is opt-in and Dev-only. Stop between Research and Source/Outline;
+    # never interpret a provisional Match as an authorization to proceed.
+    if search_intent_enabled():
+        write_json(out / "research-pack.json", pack)
+        enforce_search_intent(job, scope, out)
     catalog = classify(original, job["source_url"])
     ledger = evidence(pack, catalog)
     sections = section_plan(job, catalog, original)
@@ -67,8 +73,12 @@ def run(job: dict):
 
 def write(job: dict, model: str | None, provider: str, target: int,
           tolerance: float, max_revisions: int, force: bool):
-    verify_article_input(job, ensure_article_scope(job))
+    frozen = ensure_article_scope(job)
+    verify_article_input(job, frozen)
     out = outdir(job)
+    # A direct `write` command cannot bypass a paused Research -> Source gate.
+    if search_intent_enabled():
+        enforce_search_intent(job, frozen, out)
     prompt_path = out / "writing-prompt.md"
     if not prompt_path.is_file():
         raise RuntimeError("Run research/source/outline first")
@@ -532,6 +542,11 @@ def main(argv: list[str] | None = None) -> int:
         job = read_job(args.job)
         scope = ensure_article_scope(job, allow_create=args.command in ("scope-init", "run", "pipeline"))
         verify_article_input(job, scope)
+        # The other existing job commands must not consume stale artifacts
+        # after a contract is changed from PASS to REVIEW/BLOCK in Dev.
+        if (args.command in ("review", "quality", "media-plan", "media-import",
+                             "media-export", "benchmark") and search_intent_enabled()):
+            enforce_search_intent(job, scope, outdir(job))
         if args.command == "scope-init":
             print(json.dumps({"status": "FROZEN", "version": ARTICLE_SCOPE_VERSION,
                               "job_id": job["job_id"], "revision": scope["revision"],
