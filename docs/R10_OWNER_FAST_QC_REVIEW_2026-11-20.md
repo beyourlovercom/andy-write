@@ -12,15 +12,15 @@
 
 | 编号 | 这次在文章中看到什么 | 建议后续处理 | Owner 选择 |
 |---|---|---|---|
-| KS-01 | [成人情侣戒指](https://kissself.com/how-to-boost-intimacy-using-waterproof-toys-in-the-shower.html#Couples_Rings)小节混入健康监测智能戒指参数 | **P0 提醒偏题**；正常比较不误拦 | ☐保留 ☐取消 ☐待查 |
-| KS-02 | [成人淋浴安全](https://kissself.com/how-to-boost-intimacy-using-waterproof-toys-in-the-shower.html#Safety_in_Wet_Environments)小节跳到婴儿颈圈、儿童溺水 | **P0 提醒读者任务改变** | ☐保留 ☐取消 ☐待查 |
-| KS-03 | [清洁护理](https://kissself.com/how-to-boost-intimacy-using-waterproof-toys-in-the-shower.html#Cleaning_and_Care)中，用婴儿洗澡玩具资料推及成人设备消毒 | **P1 提醒核对具体材质、厂商说明** | ☐保留 ☐取消 ☐待查 |
-| KS-04 | [按摩棒](https://kissself.com/how-to-boost-intimacy-using-waterproof-toys-in-the-shower.html#Massage_Wands)有防水等级、浸水时长等参数，尚未核对准确型号 | **P1 提醒补足型号及说明书证据** | ☐保留 ☐取消 ☐待查 |
-| KS-05 | [吸吮类玩具](https://kissself.com/how-to-boost-intimacy-using-waterproof-toys-in-the-shower.html#Suction_Toys)含匿名限时价格，缺少可核对的报价日期 | **P2 提醒核对产品、报价时间** | ☐保留 ☐取消 ☐待查 |
+| KS-01 | [成人情侣戒指](https://kissself.com/how-to-boost-intimacy-using-waterproof-toys-in-the-shower.html#Couples_Rings)小节混入健康监测智能戒指参数 | **P0 提醒偏题**；正常比较不误拦 | **保留提醒（Owner 已确认）** |
+| KS-02 | [成人淋浴安全](https://kissself.com/how-to-boost-intimacy-using-waterproof-toys-in-the-shower.html#Safety_in_Wet_Environments)小节跳到婴儿颈圈、儿童溺水 | **P0 提醒读者任务改变** | **保留提醒（Owner 选 A）**；建议移除婴幼儿跑题，**未授权改文** |
+| KS-03 | [清洁护理](https://kissself.com/how-to-boost-intimacy-using-waterproof-toys-in-the-shower.html#Cleaning_and_Care)中，用婴儿洗澡玩具资料推及成人设备消毒 | **P1 提醒核对具体材质、厂商说明** | **保留提醒（Owner 已确认）** |
+| KS-04 | [按摩棒](https://kissself.com/how-to-boost-intimacy-using-waterproof-toys-in-the-shower.html#Massage_Wands)有防水等级、浸水时长等参数，尚未核对准确型号 | **P1 提醒补足型号及说明书证据** | **待查** |
+| KS-05 | [吸吮类玩具](https://kissself.com/how-to-boost-intimacy-using-waterproof-toys-in-the-shower.html#Suction_Toys)含匿名限时价格，缺少可核对的报价日期 | **P2 提醒核对产品、报价时间** | **待查** |
 
-**最快的审核方式：**直接回复 `KS01–KS05 都保留`，或例如
-`KS01 保留、KS02 保留、KS03 待查、KS04 保留、KS05 取消`。
-我们只把你实际回复的决定记录为 **Owner 对规则的取舍**，不冒充独立编辑事实真值。
+**Owner 已确认的审核结果（2026-11-20）：** KS01 保留、KS02 保留受众偏移 QC 提醒（取消文章中婴幼儿跑题的方向性建议，不授权改写）、KS03 保留；KS04/KS05 待查。原始回复及 KS02 澄清记录见 [`R10_OWNER_RULE_DECISIONS_2026-11-20.md`](R10_OWNER_RULE_DECISIONS_2026-11-20.md)。
+
+本表仅记录 **Owner 对规则的取舍**，不冒充独立编辑事实真值。
 
 ## 现在没有授权的事项
 
