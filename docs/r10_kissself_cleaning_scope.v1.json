@@ -1,0 +1,32 @@
+{
+  "schema": "andy-write-context-qc-scope/v1",
+  "benchmark_id": "R10-KS-26353-CURRENT-20261120",
+  "source": {
+    "source_role": "public_competitor_qc_benchmark_only",
+    "post_id": 26353,
+    "url": "https://kissself.com/how-to-properly-clean-and-sanitize-your-sex-toys-in-2026.html",
+    "modified": "2026-07-28T02:42:46",
+    "rendered_content_sha256": "a3dc40ad6144eede73bf2e265b8cf67118aacdaa474b2ccc0c072a1f1f8f9363"
+  },
+  "scope": {
+    "subject": "Cleaning and sanitizing adult intimate toys and material-appropriate care",
+    "primary_product_class": "adult intimate toys",
+    "audience": "adult toy owners",
+    "serp_intent_status": "UNASSESSABLE"
+  },
+  "off_scope_signals": [
+    {
+      "id": "UNRELATED_HEALTH_WEARABLE",
+      "terms": ["health tracking", "health data", "health monitoring", "5ATM", "smart ring", "fitness tracking", "wearable technology"],
+      "min_distinct": 2
+    },
+    {
+      "id": "UNRELATED_CHILD_FLOATATION",
+      "terms": ["baby", "neck float", "children", "child supervision", "infant", "toddler", "baby float"],
+      "min_distinct": 2
+    }
+  ],
+  "price_observed_at": null,
+  "human_editorial_labels_present": 0,
+  "note": "Exploratory same-site current-revision control; no independent reviewer or verified localized SERP"
+}
