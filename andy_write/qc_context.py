@@ -37,6 +37,7 @@ class SectionReader(HTMLParser):
         self.blocks: list[dict] = []
         self._active: list[dict] = []
         self._section = {"heading": "(article)", "anchor": ""}
+        self._hierarchy: dict[int, tuple[str, str]] = {}
         self._ignored = 0
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
@@ -75,7 +76,20 @@ class SectionReader(HTMLParser):
             if not content:
                 return
             if tag.startswith("h"):
-                self._section = {"heading": content, "anchor": block["id"]}
+                level = int(tag[1])
+                for old in list(self._hierarchy):
+                    if old >= level:
+                        del self._hierarchy[old]
+                self._hierarchy[level] = (content, block["id"])
+                # A repeated H4 such as "Pros and Cons" must not erase the
+                # product-specific parent H3. R8 has many identical H4 names.
+                anchor_level = 3 if 3 in self._hierarchy else 2
+                if anchor_level in self._hierarchy:
+                    heading, explicit_id = self._hierarchy[anchor_level]
+                    generated = re.sub(r"[^A-Za-z0-9 ]", "", heading)
+                    generated = "_".join(generated.split())
+                    self._section = {"heading": heading,
+                                     "anchor": explicit_id or generated}
             else:
                 self.blocks.append({"kind": "table_row" if tag == "tr" else tag,
                                     **self._section, "text": content,
