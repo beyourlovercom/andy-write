@@ -57,8 +57,8 @@ Raw normalized SERP provider data and private run artifacts remain **outside Git
 - [x] Independent branded official-domain ambiguity held for human review.
 - [x] No production, real article or writer side effects.
 - [x] **Owner personally confirmed REVIEW/STOP behavior and accepted this limited Dev technical evidence on 2026-11-20.** The exact Owner instruction was: “R7 真实 REVIEW Dev UAT PASS。继续补齐真实 PASS / Mismatch 场景；暂不授权合并和 Production 发布。”
-- [ ] **R7.4 full-scope acceptance:** obtain at least one independently `verified` real eligible PASS case and a real article/audit Mismatch; determine whether an authenticated Dev UI is required. The current repository has a Python CLI, not an authenticated web dashboard.
+- [x] **Later R7.4 limited Dev acceptance (2026-11-20):** A separately reviewed stable SERP cohort gave eligible PASS, and a real public benchmark page gave Mismatch / BLOCK. Andy responded `pass` to the final R7.4 CLI-only UAT acceptance question. See the [R7.4 real PASS / Mismatch report](SEARCH_INTENT_R7_REAL_PASS_MISMATCH_UAT_2026-11-20.md) for explicit evidence boundaries. This did not audit an Owner-authored article or add a web dashboard.
 
-**Owner scope of signoff:** REVIEW path only. Real PASS and Mismatch cases, full workflow UAT, any new UI, merge and Production release require distinct evidence or decisions; no broader authorization is implied.
+**Owner scope at the time of this REVIEW test:** REVIEW path only. Subsequent **limited R7.4 Dev UAT PASS** is recorded in the separate positive/negative report; it covers CLI gates and the stated stable-cohort/public-benchmark limitations. Any new UI, merge or Production release still requires its own authorization.
 
 **Rollback:** leave `ANDY_WRITE_SEARCH_INTENT_R7_ENABLED=0`; stable pre-R7 commit `a89b2dca11537ccf9d35e84eeae1ce388cacba37`. Do not merge to main or release to Production without a separate Owner decision.
