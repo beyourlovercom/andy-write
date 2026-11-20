@@ -1,0 +1,54 @@
+{
+  "job_id": "pairdoll-unboxing",
+  "brand": "pairdoll",
+  "topic": "sex doll unboxing and arrival-day inspection",
+  "target_title": "Sex Doll Unboxing Checklist: What to Check on Delivery Day",
+  "target_keyword": "sex doll unboxing checklist",
+  "source_path": ".runs/pairdoll-unboxing/source-original.notion.md",
+  "source_url": "https://app.notion.com/p/4155f5efdf9480e7a396fa7950dfa1cb",
+  "research_mode": "dc_free",
+  "queries": [
+    "sex doll delivery inspection checklist",
+    "sex doll unboxing damage check",
+    "safe lifting awkward heavy products"
+  ],
+  "research_urls": [
+    "https://consumer.ftc.gov/articles/online-shopping",
+    "https://www.cdc.gov/niosh/ergonomics/",
+    "https://www.cdc.gov/niosh/publications/numbered/2026-119.html",
+    "https://pairdoll.com/how-to-use-a-sex-doll-what-first-time-owners-should-know-about-setup-cleaning-and-care/"
+  ],
+  "protected_existing_post_ids": [
+    78585
+  ],
+  "existing_post": "https://pairdoll.com/how-to-use-a-sex-doll-what-first-time-owners-should-know-about-setup-cleaning-and-care/",
+  "output_dir": ".runs/pairdoll-unboxing",
+  "openalex_queries": [
+    "manual handling awkward loads injury prevention",
+    "safe lifting and carrying ergonomics"
+  ],
+  "quality_profile": "people_first",
+  "brand_domain": "pairdoll.com",
+  "editorial_anchor_terms": [
+    {
+      "term": "foam",
+      "source_id": "SEG-036",
+      "section_hint": "unpack"
+    },
+    {
+      "term": "fabric drawstring bag",
+      "source_id": "SEG-036",
+      "section_hint": "unpack"
+    },
+    {
+      "term": "finger",
+      "source_id": "SEG-050",
+      "section_hint": "inspection"
+    },
+    {
+      "term": "photograph",
+      "source_id": "SEG-053",
+      "section_hint": "damaged"
+    }
+  ]
+}

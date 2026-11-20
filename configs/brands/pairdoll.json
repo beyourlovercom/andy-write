@@ -1,0 +1,11 @@
+{
+  "brand_id": "pairdoll",
+  "display_name": "PairDoll",
+  "language": "en-US",
+  "audience": "Adult first-time doll owners",
+  "voice": "Helpful, calm, practical; natural U.S. English; concrete observations before slogans.",
+  "editorial_source_policy": "user_supplied_reference_required",
+  "claims_policy": "No unverifiable first-hand use, user quotes, factory ownership, guarantee, model weight, material-specific cleaning or repair claims.",
+  "protected_existing_post_ids": [78585],
+  "external_link_policy": "Non-commerce sources only; factual and contextually relevant."
+}
