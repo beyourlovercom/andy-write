@@ -71,3 +71,14 @@ PENDING until the true manufacturer and exact document are established.
 An unrelated Owner team article can be byte/hash sealed as an unseen
 test source. Do not inspect it for development, turn its paragraphs into
 examples or use it for training/threshold changes before evaluation gate.
+
+## R9 frozen public-benchmark provenance
+
+`qc-context` accepts only a private real WP snapshot matching a separately
+frozen public-competitor benchmark contract (post ID, canonical URL, latest
+public modification timestamp, HTML SHA-256 and source role). This is NOT a
+replacement for the Owner's per-job `ANDY_WRITE_ARTICLE_SCOPE_V1` contract.
+Off-scope cues and official-source requirements are scoped to that benchmark,
+not global keyword blacklists. No outgoing link, HTTP status or official-looking
+domain may auto-confirm a product claim. A model/IP-rating or cleaning claim
+without exact manufacturer passage stays `NEEDS_HUMAN_REVIEW`.

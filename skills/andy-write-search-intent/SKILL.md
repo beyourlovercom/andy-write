@@ -27,6 +27,16 @@ Determine what a searcher is trying to accomplish, what kind of page answers tha
 - **No baseless promise:** a strong intent match does not prove Google ranking ability or commercial viability. No unsupported numeric claims about CTR, competition, or Google policy.
 - **Independent scope:** the prior Mary draft was a calibration sample, not an authorization to continue Mary writing tasks. Use anonymous or public benchmark cases for future tests unless expressly directed otherwise.
 
+## R9 public-benchmark context triage (separate from SERP intent)
+
+The repo's offline `qc-context` checks section-level product/audience drift
+and evidence/freshness REVIEW candidates only against a frozen public
+benchmark scope. Without Owner's exact target keyword and localized SERP,
+its search-intent verdict remains **Unassessable** even when section candidates
+appear or none appear. Do not convert R9 candidates into Match/Mismatch,
+ignore the Search Intent contract, or replace an Owner article scope. Read
+`skills/andy-write-quality/SKILL.md` for the invocation and human gate.
+
 ## Validation & references
 
 - `references/contract.md` — read for field schema, examples and gate rules before producing a machine-readable contract.

@@ -112,3 +112,22 @@ checks (52 total) without assuming facts are true. Missing manufacturer
 SKU/model must be explicit. Later run an OTHER-INDUSTRY holdout frozen by
 SHA-256 only after real labels and an explicit Owner unseal decision. Never
 use a blind holdout for threshold or template design.
+
+## R9 Dev-only public-context candidate QC
+
+Use `python3 -m andy_write qc-context --post-json .runs/.../post.json
+--scope docs/r9_kissself_benchmark_scope.v1.json --report .runs/.../context.json`
+to triage one **actually retrieved, immutable, current public WP revision**.
+The scope contract fixes post ID, URL, revision, rendered HTML hash,
+benchmark-only source role, audience and primary product class. A changed
+source fails closed. Product/audience diversion cues, model water-rating claims,
+cleaning protocols and undated prices produce **review candidates** with
+section anchors and hashed blocks. Never call these factual errors or use an
+empty candidate list as quality, search intent or Production PASS.
+
+Off-scope term bundles are **operator-proposed**, not editorial gold labels.
+They must be adapted to an explicitly frozen task (e.g. child safety is
+perfectly relevant to an article about child floatation). Legitimate bounded
+comparisons and manufacturer caution statements are negative controls. Exact
+claim-to-manual passage checking and qualified human review remain required.
+No Codex/model, article modification, WordPress, Notion or Production writes.
