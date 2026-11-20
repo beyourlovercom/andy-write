@@ -2,7 +2,7 @@
 
 **Capture / test date:** 2026-11-20, Asia/Hong_Kong. **Environment:** US Mac mini, independent worktree `/Users/a/ai/worktrees/andy-write-r7-dev`. **Code:** `830bf543a5ef346edb3877c5ab99f6c1253afcf0` on `feat/search-intent-r7-dev`.
 
-**Result:** Three real SERP-derived V1.1 contracts were accepted by the validator, then each stopped the real Dev CLI between Research and Source with `REVIEW / STOP`. **Technical REVIEW-path acceptance: PASS. Owner editorial/UAT signoff: PENDING.** This does not establish a real eligible PASS case or a working Dev UI.
+**Result:** Three real SERP-derived V1.1 contracts were accepted by the validator, then each stopped the real Dev CLI between Research and Source with `REVIEW / STOP`. **Technical REVIEW-path acceptance: PASS. Owner accepted this limited REVIEW-path UAT on 2026-11-20.** Full R7.4 acceptance is separate; this report does not establish a full real eligible PASS case or a working Dev UI.
 
 ## Evidence origin, without false verification claims
 
@@ -56,9 +56,9 @@ Raw normalized SERP provider data and private run artifacts remain **outside Git
 - [x] Frozen test scope fingerprint checked, receipt hashes verified, retry idempotency preserved.
 - [x] Independent branded official-domain ambiguity held for human review.
 - [x] No production, real article or writer side effects.
-- [ ] **Owner personally confirms REVIEW/STOP behavior and accepts this Dev technical evidence.**
+- [x] **Owner personally confirmed REVIEW/STOP behavior and accepted this limited Dev technical evidence on 2026-11-20.** The exact Owner instruction was: “R7 真实 REVIEW Dev UAT PASS。继续补齐真实 PASS / Mismatch 场景；暂不授权合并和 Production 发布。”
 - [ ] **R7.4 full-scope acceptance:** obtain at least one independently `verified` real eligible PASS case and a real article/audit Mismatch; determine whether an authenticated Dev UI is required. The current repository has a Python CLI, not an authenticated web dashboard.
 
-**Owner signing language (if satisfied with the narrow REVIEW-path test only):** “R7 真实 REVIEW 阻断验收 PASS；继续补齐 real PASS / Mismatch 和可检查的 Dev 界面。未授权合并或发布。”
+**Owner scope of signoff:** REVIEW path only. Real PASS and Mismatch cases, full workflow UAT, any new UI, merge and Production release require distinct evidence or decisions; no broader authorization is implied.
 
 **Rollback:** leave `ANDY_WRITE_SEARCH_INTENT_R7_ENABLED=0`; stable pre-R7 commit `a89b2dca11537ccf9d35e84eeae1ce388cacba37`. Do not merge to main or release to Production without a separate Owner decision.
