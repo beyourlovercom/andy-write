@@ -16,6 +16,7 @@ from .article_scope import (VERSION as ARTICLE_SCOPE_VERSION, contract_path,
                             verify_generated_draft)
 from .fidelity import inspect_fidelity, review_sheet
 from .qc_reverse import html_qc_profile, markdown_qc_profile, compare_structure, skill_gap_actions
+from .qc_context import audit_public_context
 from .qc_goldset import write_goldset
 from .qc_calibration import calibrate, reviewer_agreement
 from .qc_review_workbench import export_workbench
@@ -430,6 +431,30 @@ def qc_profile(post_file: str, draft_file: str, report_file: str,
         "caveat":result["comparison"]["important_context"]
     },indent=2))
 
+def qc_context(post_file: str, scope_file: str, report_file: str):
+    """R9 Dev-only, no-model content-scope and source-relevance triage."""
+    private = (ROOT / ".runs").resolve()
+    post_path, report_path = resolved(post_file), resolved(report_file)
+    if not post_path.is_relative_to(private) or not report_path.is_relative_to(private):
+        raise PermissionError("Actual public WP snapshot and R9 report must stay in ignored .runs")
+    if not post_path.is_file():
+        raise FileNotFoundError("Actual private WP snapshot required")
+    scope_path = resolved(scope_file)
+    if not scope_path.is_file():
+        raise FileNotFoundError("Explicit R9 scope/signals contract required")
+    source = json.loads(post_path.read_text(encoding="utf-8"))
+    if isinstance(source, list):
+        if len(source) != 1:
+            raise ValueError("Exactly one public WP article is required")
+        source = source[0]
+    result = audit_public_context(source, json.loads(scope_path.read_text(encoding="utf-8")))
+    write_json(report_path, result)
+    print(json.dumps({"status": result["status"], "report": str(report_path),
+                      "source_post_id": result["source_post_id"],
+                      "summary": result["summary"],
+                      "search_intent_verdict": result["search_intent_verdict"],
+                      "publish_ready": False}, indent=2))
+
 def benchmark(job: dict):
     scope = ensure_article_scope(job)
     verify_article_input(job, scope)
@@ -504,6 +529,10 @@ def main(argv: list[str] | None = None) -> int:
     qa.add_argument("--report", required=True)
     qa.add_argument("--draft-url", required=True,
                     help="URL/host context of existing Owner draft; avoid fixed brand")
+    context = sub.add_parser("qc-context", help="R9 public article context triage (Dev, offline)")
+    context.add_argument("--post-json", required=True)
+    context.add_argument("--scope", required=True)
+    context.add_argument("--report", required=True)
     fv = sub.add_parser("fidelity", help="Offline full-article content mapping; no Codex")
     fv.add_argument("--source", required=True)
     fv.add_argument("--draft", required=True)
@@ -537,6 +566,9 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.command == "qc-profile":
             qc_profile(args.post_json,args.draft,args.report,args.draft_url)
+            return 0
+        if args.command == "qc-context":
+            qc_context(args.post_json,args.scope,args.report)
             return 0
         if args.command == "fidelity":
             fidelity(args.source, args.draft, args.report, args.notes)

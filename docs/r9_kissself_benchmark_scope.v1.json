@@ -1,0 +1,32 @@
+{
+  "schema": "andy-write-context-qc-scope/v1",
+  "benchmark_id": "R8-KS-26268-CURRENT-20261120",
+  "source": {
+    "source_role": "public_competitor_qc_benchmark_only",
+    "post_id": 26268,
+    "url": "https://kissself.com/how-to-boost-intimacy-using-waterproof-toys-in-the-shower.html",
+    "modified": "2026-10-04T15:03:30",
+    "rendered_content_sha256": "f691c7f330bef6e15589c68b2ef231fabfc7a393f8f00f9acb38eb5c84f19af9"
+  },
+  "scope": {
+    "subject": "Adult couple intimacy and adult waterproof toys used in a shower",
+    "primary_product_class": "adult waterproof intimacy toys",
+    "audience": "consenting adults",
+    "serp_intent_status": "UNASSESSABLE"
+  },
+  "off_scope_signals": [
+    {
+      "id": "UNRELATED_HEALTH_WEARABLE",
+      "terms": ["health tracking", "health data", "health monitoring", "5ATM", "smart ring", "fitness tracking", "wearable technology"],
+      "min_distinct": 2
+    },
+    {
+      "id": "UNRELATED_CHILD_FLOATATION",
+      "terms": ["baby", "neck float", "children", "child supervision", "infant", "toddler", "baby float"],
+      "min_distinct": 2
+    }
+  ],
+  "price_observed_at": null,
+  "human_editorial_labels_present": 0,
+  "note": "Operator-proposed signals, not gold labels; this is a public benchmark only"
+}
