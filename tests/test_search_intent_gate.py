@@ -151,6 +151,14 @@ class SearchIntentGateTests(unittest.TestCase):
             with self.assertRaisesRegex(gate.SearchIntentGateError, "only"):
                 gate.enabled()
 
+    def test_non_dev_configuration_stops_before_research(self):
+        from andy_write import __main__ as cli
+        with patch.dict(os.environ, {gate.FLAG: "1", gate.ENV: "production"}), \
+             patch.object(cli, "cached_research") as collector:
+            with self.assertRaisesRegex(gate.SearchIntentGateError, "only"):
+                cli.run(self.job)
+            collector.assert_not_called()
+
     def test_revisions_are_audited_not_overwritten(self):
         self.save(fixture(evidence="provisional", status="REVIEW"))
         with self.assertRaises(gate.SearchIntentGateError):

@@ -33,6 +33,8 @@ from .media_export import export_review_preview
 from .search_intent_gate import enabled as search_intent_enabled, enforce as enforce_search_intent
 
 def run(job: dict):
+    # Refuse invalid Dev configuration BEFORE potentially paid/networked Research.
+    intent_gate_on = search_intent_enabled()
     scope = ensure_article_scope(job, allow_create=True)
     verify_article_input(job, scope)
     out = outdir(job)
@@ -40,7 +42,7 @@ def run(job: dict):
     pack, was_cached = cached_research(job, out)
     # R7 is opt-in and Dev-only. Stop between Research and Source/Outline;
     # never interpret a provisional Match as an authorization to proceed.
-    if search_intent_enabled():
+    if intent_gate_on:
         write_json(out / "research-pack.json", pack)
         enforce_search_intent(job, scope, out)
     catalog = classify(original, job["source_url"])

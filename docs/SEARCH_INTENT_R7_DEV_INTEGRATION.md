@@ -82,15 +82,19 @@ untouched. No Dev web server is built by this change.
 
 ## R7.3 evidence and R7.4 outstanding
 
-- 12 new offline deterministic tests cover Dev guard, PASS, REVIEW, Mismatch,
+- 16 new offline deterministic tests cover Dev guard, PASS, REVIEW, Mismatch,
   keyword/site/market/Owner fingerprint, redirected SERPs, official-domain
   lookalikes, fake PASS, missing files, retries, workflow stop and stale-write bypass.
 - Canonical Skill self-tests: validator 9/9 and grader 5/5 PASS.
 - All runtime tests and Owner P0 policy validator must pass before PR review.
 - The tests use **synthetic fixtures**, not observed live SERP evidence.
-- Real Dev-only end-to-end scenarios, actual UI progression and a working
-  authenticated Dev URL remain **unverified**. A CLI cannot be described as a
-  working authenticated web UI. Owner UAT is still required.
+- Three full CLI orchestration paths are tested with explicitly **synthetic**
+  fixtures: PASS reaches Outline without a draft; provisional REVIEW and
+  editorial Mismatch BLOCK stop before Source. Invalid Dev configuration
+  is rejected before even calling Research.
+- Real-world SERP integrity, actual UI progression and a working authenticated
+  Dev URL remain **unverified**. A CLI cannot be described as a working
+  authenticated web UI. Owner UAT is still required.
 
 Rollback: leave `ANDY_WRITE_SEARCH_INTENT_R7_ENABLED=0` or revert this isolated
 branch to `a89b2dca11537ccf9d35e84eeae1ce388cacba37`. No merge into
