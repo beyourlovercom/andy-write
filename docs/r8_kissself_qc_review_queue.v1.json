@@ -1,0 +1,115 @@
+{
+  "schema": "andy-write-r8-public-qc-review-queue/v1",
+  "benchmark_id": "R8-KS-26268-CURRENT-20261120",
+  "captured_at": "2026-11-20T08:57:16+00:00",
+  "baseline_status": "STRUCTURAL_REVIEW_REQUIRED",
+  "editorial_truth_status": "HUMAN_REVIEW_PENDING",
+  "human_labels_present": 0,
+  "owner_article": false,
+  "scope": {
+    "subject": "Consensual adult couple intimacy and adult waterproof toys in a shower",
+    "source_role": "public_competitor_qc_benchmark_only",
+    "not_a_rewrite_source": true,
+    "target_keyword": null,
+    "market_country": null,
+    "serp_intent_status": "UNASSESSABLE",
+    "owner_scope_revision": "NONE"
+  },
+  "source": {
+    "post_id": 26268,
+    "url": "https://kissself.com/how-to-boost-intimacy-using-waterproof-toys-in-the-shower.html",
+    "public_wp_api": "https://kissself.com/wp-json/wp/v2/posts/26268",
+    "published_at": "2025-12-26T07:47:52",
+    "last_public_modified": "2026-10-04T15:03:30",
+    "original_2025_body_verified": false,
+    "private_snapshot_sha256": "6ae8aa3dd2e8929d3e38e42abd21175a8a4fb3c42a235256c56740214c32ffd7",
+    "rendered_content_sha256": "f691c7f330bef6e15589c68b2ef231fabfc7a393f8f00f9acb38eb5c84f19af9"
+  },
+  "machine_observed": {
+    "words_approx": 5938,
+    "headings": {
+      "h2": 7,
+      "h3": 27,
+      "h4": 10
+    },
+    "tables": 9,
+    "paragraphs": 109,
+    "list_items": 116,
+    "images": 2,
+    "images_with_alt": 2,
+    "internal_links": 59,
+    "external_links": 16,
+    "external_domains": 15,
+    "pattern_review_paragraphs": 49,
+    "reason_occurrences": {
+      "MATERIAL_SAFETY_REVIEW": 39,
+      "UNIVERSAL_CLAIM_REVIEW": 19
+    },
+    "verified_false_claims": null,
+    "quality_score": null
+  },
+  "cases": [
+    {
+      "case_id": "KS-01",
+      "priority": "P0",
+      "section": "Couples' Rings",
+      "evidence_url": "https://kissself.com/how-to-boost-intimacy-using-waterproof-toys-in-the-shower.html#Couples_Rings",
+      "candidate": "Health-tracking wearable specifications appear in adult intimate-toy category",
+      "suspected_issue_type": "PRODUCT_CLASS_COHERENCE",
+      "current_semantic_gate": "NOT_IMPLEMENTED",
+      "human_editorial_label": null,
+      "expected_reusable_rule": "Flag likely different product class; preserve proper mentions in legitimate comparisons"
+    },
+    {
+      "case_id": "KS-02",
+      "priority": "P0",
+      "section": "Safety in Wet Environments",
+      "evidence_url": "https://kissself.com/how-to-boost-intimacy-using-waterproof-toys-in-the-shower.html#Safety_in_Wet_Environments",
+      "secondary_reference": "https://www.cdc.gov/drowning/prevention/index.html",
+      "candidate": "Child flotation/drowning material detours from adult shower-toy usage",
+      "suspected_issue_type": "AUDIENCE_AND_SOURCE_ROLE_DRIFT",
+      "current_semantic_gate": "NOT_IMPLEMENTED",
+      "human_editorial_label": null,
+      "expected_reusable_rule": "Flag unsupported reader-job detour; do not treat general public safety source as adult toy specifications"
+    },
+    {
+      "case_id": "KS-03",
+      "priority": "P1",
+      "section": "Cleaning and Care",
+      "evidence_url": "https://kissself.com/how-to-boost-intimacy-using-waterproof-toys-in-the-shower.html#Cleaning_and_Care",
+      "candidate": "Household/baby bath-toy cleaning link used near adult device-specific disinfection recommendation",
+      "suspected_issue_type": "CLAIM_TO_SOURCE_RELEVANCE",
+      "current_semantic_gate": "NOT_IMPLEMENTED",
+      "human_editorial_label": null,
+      "expected_reusable_rule": "Require exact manufacturer/model compatibility or mark NEEDS_REVIEW"
+    },
+    {
+      "case_id": "KS-04",
+      "priority": "P1",
+      "section": "Massage Wands",
+      "evidence_url": "https://kissself.com/how-to-boost-intimacy-using-waterproof-toys-in-the-shower.html#Massage_Wands",
+      "candidate": "Generic device specification table gives submersion and battery details without exact model identity",
+      "suspected_issue_type": "MODEL_SPEC_PROVENANCE",
+      "current_semantic_gate": "NOT_IMPLEMENTED",
+      "human_editorial_label": null,
+      "expected_reusable_rule": "Check exact model/source provenance for device specs or mark NEEDS_REVIEW"
+    },
+    {
+      "case_id": "KS-05",
+      "priority": "P2",
+      "section": "Suction Toys",
+      "evidence_url": "https://kissself.com/how-to-boost-intimacy-using-waterproof-toys-in-the-shower.html#Suction_Toys",
+      "candidate": "Price table contains unnamed offer row and time-sensitive pricing without verified offer time",
+      "suspected_issue_type": "TABULAR_OFFER_IDENTITY_AND_FRESHNESS",
+      "current_semantic_gate": "NOT_IMPLEMENTED",
+      "human_editorial_label": null,
+      "expected_reusable_rule": "Flag anonymous product-price rows and stale offers without imposing table-count quotas"
+    }
+  ],
+  "limitations": [
+    "Operator-generated candidate queue is not human-labeled evaluation and must not be counted as TP/FN or verified error totals",
+    "2025 original content and target-market Google SERP are not verified",
+    "Only derived metadata are committed; competitor full article and QC receipts remain private and ignored",
+    "Existing unrelated PairDoll draft is a structural control, not a same-keyword A/B"
+  ]
+}
