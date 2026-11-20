@@ -2,7 +2,7 @@
 
 **Tested:** 2026-11-20 (Asia/Hong_Kong). **Runtime:** independent US Mac mini worktree `/Users/a/ai/worktrees/andy-write-r7-dev`, code `830bf543a5ef346edb3877c5ab99f6c1253afcf0`, Dev-only `ANDY_WRITE_ENV=dev ANDY_WRITE_SEARCH_INTENT_R7_ENABLED=1`.
 
-**Technical outcome: PASS / BLOCK control flow verified against real observed evidence. Owner acceptance of these additional scenarios: PENDING.** Only the prior real REVIEW-path UAT was explicitly approved by Andy. Nothing here authorizes a merge or release.
+**Technical outcome: PASS / BLOCK control flow verified against real observed evidence. R7.4 Dev Owner UAT: PASS (2026-11-20).** Owner replied `pass` to the explicit final R7.4 CLI-evidence signoff request. This acceptance is limited to the reviewed stable SERP cohort and the public benchmark Mismatch; it does **not** authorize a merge or release.
 
 ## 1. Real evidence-qualified positive case — prebrief PASS
 
@@ -49,7 +49,15 @@ This is a **public benchmark fixture**, not an Owner-supplied article. No third-
 - [x] Positive stable reviewed cohort — **Dev technical PASS**; no real authored article and no publication.
 - [x] Negative public benchmark Mismatch — **Dev technical PASS**, deterministic `BLOCK`.
 - [x] Scope, hashes, idempotent retries, absence of Draft/Production writes checked.
-- [ ] **Andy signs these positive/negative Dev cases after reviewing limitations, especially stable cohort vs unfiltered raw SERP.**
-- [ ] **Owner chooses whether CLI evidence is adequate for R7.4 closure or an authenticated read-only Dev UI is required.** The current application has no web dashboard, and no Dev URL is claimed.
+- [x] **Andy accepted the positive/negative Dev evidence in the final R7.4 signoff**, with the stable-cohort limitation disclosed. The unfiltered 19-row SERP remains `provisional / REVIEW`; this was never an all-results verified PASS.
+- [x] **Owner accepted CLI-only evidence for R7.4 Dev UAT**, replying `pass` to the final acceptance question. No authenticated Dev web UI was built; a Dev URL is not claimed.
 
 **Suggested narrow signoff, if acceptable:** “R7 真实 PASS / Mismatch Dev UAT PASS，接受稳定样本的限定验证范围；继续最终 R7 收尾。未授权 GitHub main 合并或 Production 发布。”
+
+## 6. Owner R7.4 Dev acceptance record
+
+- **Date:** 2026-11-20 (Asia/Hong_Kong).
+- **Owner's actual reply:** `pass`, directly following the request to confirm whether the CLI-only real REVIEW / positive PASS / Mismatch-BLOCK Dev evidence is sufficient for **R7.4 Dev Owner UAT**, with the disclosed stable-cohort limitation. This report records the contextual interpretation, not a longer invented quotation.
+- **Accepted scope:** Dev CLI UAT and gate/receipt behavior; positive intent evidence verified **only within the reviewed 8-row stable cohort** (7 on-topic), 19-row unfiltered evidence still provisional; negative Mismatch is a real public benchmark page, **not** an Owner article. No authenticated Dev web dashboard is represented as delivered.
+- **Outcome:** **R7.4 Dev Owner UAT PASS / closed in this limited scope.** No change in Production readiness, no actual Owner article audit signoff, and no automatic editorial or publishing approval.
+- **Still not authorized:** PR creation, `main` merge, Production deployment, WordPress publication, real article rewriting or contacting writers. Any of these requires separate explicit Owner authorization.
