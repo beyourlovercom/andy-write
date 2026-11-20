@@ -34,6 +34,20 @@ def contract(post: dict) -> dict:
 
 
 class ContextQCTests(unittest.TestCase):
+    def test_repeated_h4_heading_keeps_parent_product_identity(self):
+        html = (
+            '<h2>Waterproof Products</h2>'
+            '<h3>Wearable Rings</h3><h4>Pros and Cons</h4>'
+            '<p>This health tracking product carries a 5ATM rating.</p>'
+            '<h3>Other Products</h3><h4>Pros and Cons</h4>'
+            '<p>This child accessory is for baby neck float lessons.</p>')
+        post = source(html)
+        result = audit_public_context(post, contract(post))
+        flagged = [(c["heading"], c["anchor"]) for c in result["candidates"]
+                   if c["priority"] == "P0"]
+        self.assertEqual(flagged, [("Wearable Rings", "Wearable_Rings"),
+                                   ("Other Products", "Other_Products")])
+
     def test_five_distinct_candidates_not_claimed_as_errors(self):
         html = (
             '<h2 id="Couples_Rings">Couples Rings</h2>'
