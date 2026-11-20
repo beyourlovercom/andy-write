@@ -110,6 +110,27 @@ class IsolatedDevEndToEnd(unittest.TestCase):
         self.assertIn("Search Intent BLOCK", result.stderr)
         self.assertFalse((self.out / "outline.md").exists())
 
+    def test_r10_manual_scope_qc_does_not_activate_pipeline(self):
+        draft = self.out / "synthetic-draft.md"
+        body = ("# Full Size Doll Care Guide\n\n"
+                "## Model Selection\n\nA torso is described as the main option.\n\n"
+                "The torso is presented again as the primary product.\n")
+        draft.write_text(body, encoding="utf-8")
+        destination = self.out / "context-review.json"
+        env = {**os.environ, "ANDY_WRITE_ENV": "dev",
+               "ANDY_WRITE_SEARCH_INTENT_R7_ENABLED": "0"}
+        outcome = subprocess.run(
+            [sys.executable, "-m", "andy_write", "qc-draft-context",
+             "--job", str(self.job_path), "--draft", str(draft),
+             "--report", str(destination)], cwd=ROOT, env=env,
+            capture_output=True, text=True, timeout=16, check=False)
+        self.assertEqual(outcome.returncode, 0, outcome.stderr)
+        output = json.loads(destination.read_text(encoding="utf-8"))
+        self.assertEqual(output["summary"]["product_substitution_candidates"], 1)
+        self.assertFalse(output["publish_ready"])
+        self.assertEqual(draft.read_text(encoding="utf-8"), body)
+        self.assertFalse((self.out / "article-v1.md").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

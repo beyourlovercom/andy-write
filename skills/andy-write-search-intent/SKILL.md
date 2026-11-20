@@ -37,6 +37,12 @@ appear or none appear. Do not convert R9 candidates into Match/Mismatch,
 ignore the Search Intent contract, or replace an Owner article scope. Read
 `skills/andy-write-quality/SKILL.md` for the invocation and human gate.
 
+R10 cross-sample smoke and `qc-draft-context` are also manual, Dev-only
+scope-coherence candidate checks. Even zero P0 flags do **not** establish
+Search Intent `Match` without the specified target keyword and verified SERP.
+Never let a public QC benchmark silently overwrite the frozen Owner scope,
+or activate these rules in the normal pipeline before editorial/Owner UAT.
+
 ## Validation & references
 
 - `references/contract.md` — read for field schema, examples and gate rules before producing a machine-readable contract.
