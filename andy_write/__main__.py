@@ -16,7 +16,7 @@ from .article_scope import (VERSION as ARTICLE_SCOPE_VERSION, contract_path,
                             verify_generated_draft)
 from .fidelity import inspect_fidelity, review_sheet
 from .qc_reverse import html_qc_profile, markdown_qc_profile, compare_structure, skill_gap_actions
-from .qc_context import audit_public_context
+from .qc_context import audit_public_context, audit_frozen_owner_draft
 from .qc_goldset import write_goldset
 from .qc_calibration import calibrate, reviewer_agreement
 from .qc_review_workbench import export_workbench
@@ -455,6 +455,25 @@ def qc_context(post_file: str, scope_file: str, report_file: str):
                       "search_intent_verdict": result["search_intent_verdict"],
                       "publish_ready": False}, indent=2))
 
+def qc_draft_context(job_file: str, draft_file: str, report_file: str):
+    """Manual-only R10 Dev review against the actual immutable Owner job."""
+    report_path = resolved(report_file)
+    private = (ROOT / ".runs").resolve()
+    if not report_path.is_relative_to(private):
+        raise PermissionError("Owner contextual QC report must remain in private .runs")
+    job = read_job(job_file)
+    scope = ensure_article_scope(job)
+    verify_article_input(job, scope)
+    source = resolved(draft_file)
+    if not source.is_file():
+        raise FileNotFoundError("Actual existing draft required for contextual QC")
+    draft = source.read_text(encoding="utf-8")
+    verify_generated_draft(scope, draft)
+    report = audit_frozen_owner_draft(draft, scope)
+    write_json(report_path, report)
+    print(json.dumps({"status": report["status"], "report": str(report_path),
+                      "summary": report["summary"], "publish_ready": False}, indent=2))
+
 def benchmark(job: dict):
     scope = ensure_article_scope(job)
     verify_article_input(job, scope)
@@ -533,6 +552,10 @@ def main(argv: list[str] | None = None) -> int:
     context.add_argument("--post-json", required=True)
     context.add_argument("--scope", required=True)
     context.add_argument("--report", required=True)
+    own_context = sub.add_parser("qc-draft-context", help="R10 manual Owner draft scope triage (Dev)")
+    own_context.add_argument("--job", required=True)
+    own_context.add_argument("--draft", required=True)
+    own_context.add_argument("--report", required=True)
     fv = sub.add_parser("fidelity", help="Offline full-article content mapping; no Codex")
     fv.add_argument("--source", required=True)
     fv.add_argument("--draft", required=True)
@@ -569,6 +592,9 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.command == "qc-context":
             qc_context(args.post_json,args.scope,args.report)
+            return 0
+        if args.command == "qc-draft-context":
+            qc_draft_context(args.job,args.draft,args.report)
             return 0
         if args.command == "fidelity":
             fidelity(args.source, args.draft, args.report, args.notes)

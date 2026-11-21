@@ -131,3 +131,22 @@ perfectly relevant to an article about child floatation). Legitimate bounded
 comparisons and manufacturer caution statements are negative controls. Exact
 claim-to-manual passage checking and qualified human review remain required.
 No Codex/model, article modification, WordPress, Notion or Production writes.
+
+## R10 cross-sample and manual Owner draft scope review
+
+Run a second actually fetched, current public article against a **separately
+frozen** scope contract. Different publication years require an explicit date
+window at read-only fetch time. Compare candidate locations and rule codes;
+do not divide by human false-positive denominators when no qualified editor
+has independently labeled cases. Cleaning advice is on-topic in an article
+about cleaning; P1 source review is not automatically a P0 intent mismatch.
+
+For a previously existing Owner draft with a valid frozen
+`ANDY_WRITE_ARTICLE_SCOPE_V1` contract, the optional Dev-only command
+`python3 -m andy_write qc-draft-context --job ... --draft ... --report .runs/...`
+flags substantive use of excluded primary product identities at the H2 level.
+Do not turn it into a global term blacklist; when the Owner explicitly permits
+comparison, relevant comparisons must remain allowable. This manual
+inspection tool does NOT change Quality, Draft or the default writing pipeline
+and never produces a writing-quality PASS. Actual writing A/B needs explicit
+Owner source/rewrite authorization and independently labeled editorial review.

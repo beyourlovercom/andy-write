@@ -82,3 +82,14 @@ Off-scope cues and official-source requirements are scoped to that benchmark,
 not global keyword blacklists. No outgoing link, HTTP status or official-looking
 domain may auto-confirm a product claim. A model/IP-rating or cleaning claim
 without exact manufacturer passage stays `NEEDS_HUMAN_REVIEW`.
+
+## R10 public snapshot windows and Owner source separation
+
+The benchmark fetch allows **explicit paired** `--published-from` and
+`--published-through` dates for current-revision 2026 articles; absent flags
+retain the late-2025 default. Verify exact requested slug, HTTPS first-party
+link and private ignored output. An independently fetched current revision
+does not prove the original publish-date body. Every new public sample gets
+its own ID/link/modified/HTML-hash contract and must not be treated as the
+Owner's original article. `qc-draft-context` reads the Owner's *existing*
+frozen contract, never derives one from KissSelf or another competitor.

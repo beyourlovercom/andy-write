@@ -222,3 +222,61 @@ def audit_public_context(source: dict, contract: dict) -> dict:
             "Only derived hashes/heading metadata may be committed; full article stays private",
         ],
     }
+
+
+def audit_frozen_owner_draft(draft: str, frozen_scope: dict) -> dict:
+    """Manual Dev QA of an existing Owner draft, without changing the pipeline.
+
+    The only product exclusions come from the actual frozen Article Scope
+    Contract. A brief comparative mention is never a machine factual error.
+    """
+    from .article_scope import VERSION as OWNER_SCOPE_VERSION
+
+    if (frozen_scope.get("version") != OWNER_SCOPE_VERSION
+        or frozen_scope.get("status") != "FROZEN"
+        or not frozen_scope.get("scope_fingerprint")):
+        raise ValueError("Actual frozen Owner Article Scope Contract required")
+    scope = frozen_scope["scope"]
+    excluded = scope["excluded_primary_products"]
+    allow_comparison = scope["allow_explicit_comparison"]
+    chunks = re.findall(r"(?ms)^##\s+([^\n]+)\n(.*?)(?=^##\s+|\Z)", draft)
+    issues = []
+    if not allow_comparison:
+        for heading, body in chunks:
+            for product in excluded:
+                pattern = re.compile(r"(?<!\w)" + re.escape(product) + r"(?!\w)", re.I)
+                # A section named for the wrong product, or two substantive
+                # mentions in body, merits review. Do not count a negated
+                # comparison line as a primary-product substitution.
+                without_contrast = [p for p in re.split(r"\n\s*\n", body)
+                                    if not CONTRAST.search(p)]
+                substantial = sum(len(pattern.findall(p)) for p in without_contrast)
+                if not pattern.search(heading) and substantial < 2:
+                    continue
+                issues.append({
+                    "id": f"OWNER-CTX-{len(issues)+1:03d}",
+                    "code": "EXCLUDED_PRODUCT_SECTION_REVIEW",
+                    "priority": "P0", "heading": heading.strip(),
+                    "excluded_product": product,
+                    "body_sha256": hashtext(body),
+                    "reason": "Possible section-level primary-product substitution; check Owner job",
+                    "editorial_verdict": "NEEDS_HUMAN_REVIEW",
+                    "verified_fact_error": False,
+                })
+    return {
+        "schema": "andy-write-owner-draft-context-qc/v1",
+        "job_id": scope["job_id"], "article_scope_fingerprint": frozen_scope["scope_fingerprint"],
+        "draft_sha256": hashtext(draft), "source_role": "owner_original_scope_only",
+        "status": "HUMAN_REVIEW_REQUIRED", "publish_ready": False,
+        "human_labels_present": 0,
+        "search_intent_verdict": "UNASSESSABLE_WITHOUT_VERIFIED_SERP",
+        "summary": {"sections_inspected": len(chunks),
+                    "product_substitution_candidates": len(issues)},
+        "candidates": issues,
+        "limitations": [
+            "Only explicit Owner-frozen exclusions are matched; no LLM semantic classification",
+            "A non-hit is not an assurance of article intent, factual correctness or prose quality",
+            "Comparisons allowed by the frozen Owner scope are not auto-blocked",
+            "Manually invoked Dev report only; no default writing workflow integration",
+        ],
+    }

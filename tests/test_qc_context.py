@@ -7,7 +7,8 @@ from pathlib import Path
 import unittest
 
 from andy_write.io import hashtext
-from andy_write.qc_context import audit_public_context
+from andy_write.qc_context import audit_public_context, audit_frozen_owner_draft
+from andy_write.article_scope import VERSION as ARTICLE_SCOPE_VERSION
 
 
 def source(html: str) -> dict:
@@ -34,6 +35,31 @@ def contract(post: dict) -> dict:
 
 
 class ContextQCTests(unittest.TestCase):
+    def test_owner_frozen_draft_section_drift_is_manual_only(self):
+        frozen = {"version": ARTICLE_SCOPE_VERSION, "status": "FROZEN",
+                  "scope_fingerprint": "synthetic-fingerprint",
+                  "scope": {"job_id": "fictional-owner-job",
+                            "excluded_primary_products": ["torso"],
+                            "allow_explicit_comparison": False}}
+        prose = ("# Full-Size Doll Care\n\n"
+                 "## Storage Recommendations\n\nThis torso is easier to store.\n\n"
+                 "A torso can be kept on a compact shelf.\n\n"
+                 "## Legitimate Caution\n\nUnlike a torso, a full-size product "
+                 "can require more space.\n")
+        result = audit_frozen_owner_draft(prose, frozen)
+        self.assertEqual(result["summary"]["product_substitution_candidates"], 1)
+        self.assertEqual(result["candidates"][0]["heading"], "Storage Recommendations")
+        self.assertEqual(result["status"], "HUMAN_REVIEW_REQUIRED")
+        self.assertFalse(result["publish_ready"])
+        self.assertEqual(result["human_labels_present"], 0)
+        frozen["scope"]["allow_explicit_comparison"] = True
+        allowed = audit_frozen_owner_draft(prose, frozen)
+        self.assertEqual(allowed["candidates"], [])
+
+    def test_manual_draft_context_requires_actual_frozen_scope(self):
+        with self.assertRaisesRegex(ValueError, "Actual frozen Owner"):
+            audit_frozen_owner_draft("# Test\n", {"scope": {"job_id": "no"}})
+
     def test_repeated_h4_heading_keeps_parent_product_identity(self):
         html = (
             '<h2>Waterproof Products</h2>'
