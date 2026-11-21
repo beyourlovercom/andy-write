@@ -8,7 +8,8 @@ import unittest
 from andy_write.io import hashtext
 from andy_write.qc_context_blind import (
     blank_pair_review, blank_source_review, build_blind_pairs,
-    build_source_packet, score_blind_review, seal_source_gold,
+    build_source_packet, render_pair_workbench, render_source_workbench,
+    score_blind_review, seal_source_gold,
 )
 from scripts.r12_blind_qc import private_path
 
@@ -79,6 +80,23 @@ class BlindContextTests(unittest.TestCase):
         source["content"]["rendered"] += "tampered"
         with self.assertRaisesRegex(ValueError, "R9_SOURCE_CONFLICT"):
             build_source_packet([(source, contract), self.cases[1]])
+
+    def test_offline_source_form_exposes_no_machine_version_or_auto_labels(self):
+        html = render_source_workbench(self.packet)
+        self.assertIn("离线", html)
+        self.assertIn("reviewed", html)
+        self.assertNotIn('"R11"', html)
+        self.assertNotIn('"candidates":', html)
+
+    def test_offline_pair_form_contains_no_sealed_version_map(self):
+        gold = seal_source_gold(self.packet, self.a, self.b)
+        reps = [(report(s, c), report(s, c, upgraded=True)) for s, c in self.cases]
+        blind, mapping = build_blind_pairs(self.packet, gold, reps)
+        html = render_pair_workbench(blind)
+        self.assertIn("匿名提醒", html)
+        self.assertNotIn('"baseline"', html)
+        self.assertNotIn('"upgraded"', html)
+        self.assertIn("PRIVATE_EVALUATOR_ONLY", json.dumps(mapping))
 
     def test_unlabeled_template_and_same_editor_rejected(self):
         with self.assertRaisesRegex(ValueError, "reviewer identity"):

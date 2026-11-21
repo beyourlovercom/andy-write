@@ -212,6 +212,123 @@ def blank_pair_review(blind: dict) -> dict:
                       for p in blind["pairs"]]}
 
 
+def _offline_html(title: str, payload: dict, javascript: str) -> str:
+    """Offline-only reviewer UI. Source and ratings never leave the browser."""
+    safe = json.dumps(payload, ensure_ascii=False).replace("<", "\\u003c").replace(
+        ">", "\\u003e").replace("&", "\\u0026")
+    return ("<!doctype html><html lang='zh-CN'><head><meta charset='utf-8'>"
+            "<meta name='viewport' content='width=device-width,initial-scale=1'>"
+            "<title>" + title + "</title><style>"
+            "body{font:15px system-ui,sans-serif;color:#172333;max-width:1030px;margin:20px auto;padding:16px;background:#f3f6fa}"
+            "header,section{background:white;border:1px solid #d8e0ea;padding:16px;border-radius:12px;margin-bottom:12px}"
+            "h1{font-size:24px}h2{font-size:17px}p{line-height:1.6}"
+            "pre{white-space:pre-wrap;word-break:break-word;line-height:1.7;background:#f8fafc;padding:12px;border-radius:8px}"
+            "label{display:block;margin:10px 0}input,select,textarea,button{font:inherit}"
+            "input[type=text],textarea,select{box-sizing:border-box;width:100%;padding:9px}"
+            "textarea{min-height:70px}button{border:0;border-radius:9px;background:#2856a5;color:white;padding:12px;cursor:pointer}"
+            ".muted{color:#65758a}.columns{display:grid;grid-template-columns:1fr 1fr;gap:12px}"
+            ".notice{border:1px solid #dbe4ed;border-radius:8px;padding:10px}"
+            "@media(max-width:750px){.columns{display:block}}"
+            "</style></head><body><header><h1>" + title + "</h1>"
+            "<p>完全离线、只读。须由两位不同真人独立完成。页面包含冻结竞品原文，禁止外传。"
+            "导出 JSON 后须由离线 CLI 校验，未自动产生事实真值或 Owner 验收。</p>"
+            "<label>审稿人真实姓名或内部代号<input id='reviewer' type='text' autocomplete='off'></label>"
+            "<p id='progress' class='muted'></p><button id='export'>检查完整性并导出 JSON</button>"
+            "<p id='message'></p></header><main id='items'></main>"
+            "<script type='application/json' id='payload'>" + safe + "</script>"
+            "<script>\"use strict\";" + javascript + "</script></body></html>")
+
+
+_JS_HELPERS = r'''
+const data=JSON.parse(document.getElementById('payload').textContent);
+const root=document.getElementById('items');
+function el(tag,t){const n=document.createElement(tag);if(t!==undefined)n.textContent=t;return n;}
+function label(name,field){const l=el('label',name);l.append(field);return l;}
+function save(data,name){const b=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+ const u=URL.createObjectURL(b),a=el('a');a.href=u;a.download=name;document.body.append(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(u),1000);}
+function markProgress(done,total){document.getElementById('progress').textContent=done+'/'+total+' 项有效完成';}
+'''
+
+
+def render_source_workbench(packet: dict) -> str:
+    if packet.get("schema") != VERSION + "/source-only":
+        raise ValueError("Real frozen source-only packet required")
+    javascript = _JS_HELPERS + r'''
+data.sections.forEach((s,i)=>{
+ const box=el('section');box.dataset.id=s.id;
+ box.append(el('h2',(i+1)+' / '+data.sections.length+' · #'+s.post_id+' · '+s.heading));
+ box.append(el('p','冻结段落（不是机器提醒）：'));
+ box.append(el('pre',s.frozen_section_text));
+ const checked=el('input');checked.type='checkbox';checked.dataset.field='reviewed';
+ box.append(label('已完整查看本节并作出判断（无问题也必须勾选）',checked));
+ data.issue_codes.forEach(code=>{
+  const c=el('input');c.type='checkbox';c.dataset.code=code;
+  box.append(label(code,c));
+ });
+ const reason=el('textarea');reason.dataset.field='rationale';reason.placeholder='正向标签：至少12字具体原因。无问题可留空。';
+ box.append(label('依据／原因',reason));root.append(box);
+ box.addEventListener('input',update);
+});
+function collect(){return Array.from(root.querySelectorAll('section')).map(s=>({
+ id:s.dataset.id, reviewed:s.querySelector('[data-field=reviewed]').checked,
+ issue_codes:Array.from(s.querySelectorAll('[data-code]:checked')).map(x=>x.dataset.code),
+ rationale:s.querySelector('[data-field=rationale]').value.trim()||null
+}));}
+function valid(x){return x.reviewed&&(!x.issue_codes.length||(x.rationale&&x.rationale.length>=12));}
+function update(){markProgress(collect().filter(valid).length,data.sections.length);}
+document.getElementById('export').addEventListener('click',()=>{
+ const reviewer=document.getElementById('reviewer').value.trim(),rows=collect();
+ if(reviewer.length<2||rows.some(x=>!valid(x))){
+  document.getElementById('message').textContent='请填写身份，并逐项完成全部段落与正向原因。';return;}
+ save({schema:'andy-write-context-qc-blind/v1/source-labels',source_lock:data.source_lock,
+       reviewer_id:reviewer,sections:rows.map(({id,issue_codes,rationale})=>({id,issue_codes,rationale}))},
+      'r12-source-labels-'+reviewer.replace(/[^\w-]/g,'_')+'.json');
+ document.getElementById('message').textContent='完成离线导出；请单独交给评测管理员，勿交换另一位的标签。';
+});update();
+'''
+    return _offline_html("Andy Write R12 · 原文独立盲评", packet, javascript)
+
+
+def render_pair_workbench(blind: dict) -> str:
+    if blind.get("schema") != VERSION + "/pairs":
+        raise ValueError("Anonymized pair packet required")
+    javascript = _JS_HELPERS + r'''
+function card(data,side){const n=el('div');n.className='notice';n.append(el('h3',side));
+ n.append(el('pre',data.emitted?data.reason+'\n'+JSON.stringify(data.review_details,null,2):'未触发提醒'));
+ return n;}
+data.pairs.forEach((p,i)=>{
+ const box=el('section');box.dataset.id=p.id;
+ box.append(el('h2',(i+1)+' / '+data.pairs.length+' · '+p.heading+' · '+p.issue_code));
+ const pair=el('div');pair.className='columns';
+ ['left','right'].forEach(side=>{const n=card(p[side],side==='left'?'方案 A':'方案 B');
+  const s=el('select');s.dataset.field=side+'_actionability';
+  [{v:'',t:'请独立评分'},{v:'0',t:'0 · 无用/误导'},{v:'1',t:'1 · 很弱'},
+   {v:'2',t:'2 · 有用'},{v:'3',t:'3 · 清晰可执行'}].forEach(o=>{
+    const opt=el('option',o.t);opt.value=o.v;s.append(opt);});
+  n.append(label('可操作性',s));pair.append(n);});box.append(pair);
+ const notes=el('textarea');notes.dataset.field='rationale';notes.placeholder='可选：评价理由';
+ box.append(label('评价理由',notes));root.append(box);box.addEventListener('input',update);
+});
+function collect(){return Array.from(root.querySelectorAll('section')).map(s=>{
+ const get=k=>s.querySelector('[data-field='+k+']').value;
+ return {id:s.dataset.id,left_actionability:get('left_actionability')===''?null:Number(get('left_actionability')),
+ right_actionability:get('right_actionability')===''?null:Number(get('right_actionability')),
+ rationale:get('rationale')||null};});}
+function valid(x){return Number.isInteger(x.left_actionability)&&Number.isInteger(x.right_actionability);}
+function update(){markProgress(collect().filter(valid).length,data.pairs.length);}
+document.getElementById('export').addEventListener('click',()=>{
+ const reviewer=document.getElementById('reviewer').value.trim(),rows=collect();
+ if(reviewer.length<2||rows.some(x=>!valid(x))){
+  document.getElementById('message').textContent='请填写身份并完成每组 A/B 的两项评分。';return;}
+ save({schema:'andy-write-context-qc-blind/v1/pair-labels',source_lock:data.source_lock,
+       reviewer_id:reviewer,pairs:rows},'r12-pair-labels-'+reviewer.replace(/[^\w-]/g,'_')+'.json');
+ document.getElementById('message').textContent='已导出；评测管理员在两份评分到齐后才揭盲。';
+});update();
+'''
+    return _offline_html("Andy Write R12 · 匿名提醒 A/B", blind, javascript)
+
+
 def score_blind_review(blind: dict, mapping: dict, gold: dict,
                        review_a: dict, review_b: dict) -> dict:
     lock = blind["source_lock"]

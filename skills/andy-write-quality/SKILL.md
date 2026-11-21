@@ -193,6 +193,10 @@ with no R10/R11 notice visible. Two different human editors must independently
 label *every section* for actionable QC review opportunities, including
 negative sections, and explain positive findings. The codes classify an
 editorial **need to investigate**, not a false product fact or intent verdict.
+Generate an offline, private `source-html` form so editors need not hand-edit
+JSON; each must affirmatively mark even sections with no issue. Preserve
+their exported JSON separately. Do not share one editor's labels with the
+other before both submit.
 Do not fabricate, infer or prefill human labels from machine candidates or
 Owner's prior *rule-preference* decisions. If editors disagree, `seal-gold`
 requires an explicit Owner adjudication on each disputed section.
@@ -202,8 +206,11 @@ R10/R11 reports from the **same exact post ID, URL, revision, content hash,
 benchmark role and scope**. Reveal only shuffled left/right notices, never
 version names; keep the random sealed map private from the two independent
 pair raters. Ask each rater to grade notice actionability on 0–3, then `score`
-computes *review-opportunity* TP/FP/FN and masked-card actionability. With
-unchanged candidate locations, detection precision/recall will not improve
+computes *review-opportunity* TP/FP/FN and masked-card actionability.
+Use `pair-html` for independent, offline paired-card ratings only after the
+source labels are sealed. Keep the version map in `.runs/.../sealed/` and do
+not distribute it to editors. With unchanged candidate locations, detection
+precision/recall will not improve
 merely because R11 supplies clearer evidence-gap text; score it separately.
 Missing or incomplete genuine human labels **must fail closed**.
 
