@@ -13,7 +13,7 @@ from urllib.parse import urlsplit
 
 from .io import hashtext, now
 
-VERSION = "andy-write-context-qc/v1"
+VERSION = "andy-write-context-qc/v1.1"
 SPEC = re.compile(r"\b(?:IPX[4-9]|IP6[7-9]|\d+\s?ATM)\b", re.I)
 SPEC_ASSERTION = re.compile(
     r"\b(?:submerg\w*|immers\w*|waterproof|water.resistant|"
@@ -21,6 +21,13 @@ SPEC_ASSERTION = re.compile(
 CLEANING = re.compile(r"\b(?:vinegar|bleach|disinfect\w*|steriliz\w*|sanitiz\w*)\b", re.I)
 PRICE = re.compile(r"(?:[$€£]\s?\d|\b(?:USD|EUR|GBP)\s?\d)", re.I)
 OFFER = re.compile(r"\b(?:limited.time offer|special offer|flash sale|sale price)\b", re.I)
+BATTERY_SPEC = re.compile(
+    r"\b(?:charg(?:e|ing)(?:\s+time)?|battery\s+life|run\s*time|play\s*time)\b"
+    r".{0,65}\b\d+(?:\.\d+)?\s*(?:hours?|hrs?|minutes?|mins?)\b", re.I)
+MODEL_ID = re.compile(
+    r"\b(?:model|sku|part\s*(?:number|no\.?))\s*[:#-]?\s*"
+    r"(?!IPX[4-9]\b|IP6[7-9]\b)(?=[A-Z0-9-]*\d)"
+    r"[A-Z0-9][A-Z0-9-]{2,}\b", re.I)
 CONTRAST = re.compile(
     r"\b(?:unlike|rather than|not a|not the same as|do not confuse|"
     r"different from|instead of)\b", re.I)
@@ -29,7 +36,7 @@ CONTRAST = re.compile(
 class SectionReader(HTMLParser):
     """Extract contextual blocks, link URLs, and table rows from WP HTML."""
 
-    TAGS = {"p", "li", "tr", "h2", "h3", "h4"}
+    TAGS = {"p", "li", "tr", "h2", "h3", "h4", "td", "th"}
     IGNORE = {"script", "style", "svg", "noscript", "template"}
 
     def __init__(self) -> None:
@@ -48,7 +55,7 @@ class SectionReader(HTMLParser):
             return
         if tag in self.TAGS:
             self._active.append({"tag": tag, "text": [], "links": [],
-                                 "id": a.get("id") or a.get("data-anchor") or ""})
+                                 "cells": [], "id": a.get("id") or a.get("data-anchor") or ""})
         if tag == "a":
             href = a.get("href") or ""
             for block in self._active:
@@ -75,6 +82,14 @@ class SectionReader(HTMLParser):
             content = " ".join(" ".join(block["text"]).split())
             if not content:
                 return
+            if tag in {"td", "th"}:
+                # Preserve column boundaries only in memory. Raw cell content
+                # must never be placed in the persisted benchmark report.
+                for ancestor in reversed(self._active):
+                    if ancestor["tag"] == "tr":
+                        ancestor["cells"].append(content)
+                        break
+                return
             if tag.startswith("h"):
                 level = int(tag[1])
                 for old in list(self._hierarchy):
@@ -93,12 +108,27 @@ class SectionReader(HTMLParser):
             else:
                 self.blocks.append({"kind": "table_row" if tag == "tr" else tag,
                                     **self._section, "text": content,
-                                    "links": sorted(set(block["links"]))})
+                                    "links": sorted(set(block["links"])),
+                                    "cells": block["cells"] if tag == "tr" else []})
             return
 
 
 def _has(text: str, term: str) -> bool:
     return bool(re.search(r"(?<!\w)" + re.escape(term) + r"(?!\w)", text, re.I))
+
+
+def _unnamed_offer(row: dict) -> bool:
+    """A promotional phrase in a product-name cell is not a product identity."""
+    cells = row.get("cells") or []
+    if len(cells) >= 2:
+        label = cells[0].strip()
+        if OFFER.search(label) and PRICE.search(" ".join(cells[1:])):
+            remainder = OFFER.sub("", label).strip(" :-–—|()[]")
+            return not remainder
+    # Minimal malformed or flattened table fallback.
+    return bool(re.fullmatch(
+        r"\s*(?:limited.time offer|special offer|flash sale|sale price)"
+        r"\s+[$€£]\s?\d[\d.,]*\s*", row["text"], re.I))
 
 
 def validate_contract(contract: dict, source: dict) -> None:
@@ -146,7 +176,8 @@ def audit_public_context(source: dict, contract: dict) -> dict:
     seen = set()
 
     def flag(code: str, priority: str, heading: str, anchor: str,
-             blocks: list[dict], matched: list[str], reason: str) -> None:
+             blocks: list[dict], matched: list[str], reason: str,
+             review_details: dict | None = None) -> None:
         key = (code, heading, anchor)
         if key in seen:
             return
@@ -161,6 +192,8 @@ def audit_public_context(source: dict, contract: dict) -> dict:
             "editorial_verdict": "NEEDS_HUMAN_REVIEW",
             "verified_fact_error": False,
         }
+        if review_details:
+            receipt["review_details"] = review_details
         issues.append(receipt)
 
     for (heading, anchor), blocks in sections.items():
@@ -175,14 +208,22 @@ def audit_public_context(source: dict, contract: dict) -> dict:
             flag("PRODUCT_OR_AUDIENCE_DRIFT_REVIEW", "P0", heading, anchor,
                  relevant, hits, "Independent off-scope product/audience cues; check actual user job")
 
-        candidate_specs = [b for b in blocks if SPEC.search(b["text"])
-                           and SPEC_ASSERTION.search(b["text"])
+        candidate_specs = [b for b in blocks if ((SPEC.search(b["text"])
+                           and SPEC_ASSERTION.search(b["text"]))
+                           or BATTERY_SPEC.search(b["text"]))
                            and not re.search(r"\b(?:check|verify|consult)\s+(?:the\s+)?"
                                              r"(?:manufacturer|manual|rating)\b", b["text"], re.I)]
         if candidate_specs:
+            model_identified = bool(MODEL_ID.search(heading + " " + text))
             flag("MODEL_SPEC_PROVENANCE_REVIEW", "P1", heading, anchor,
-                 candidate_specs, ["device-water-rating"],
-                 "Water-rating/spec assertion has no verified exact model-manual passage")
+                 candidate_specs, ["device-water-or-battery-spec"],
+                 "Product-specific water/battery parameters need exact model, "
+                 "manufacturer manual and applicable test conditions",
+                 {"explicit_model_identifier_present": model_identified,
+                  "claim_source_link_present": any(b["links"] for b in candidate_specs),
+                  "manufacturer_passage_verified": False,
+                  "evidence_gaps": (["model_identity_unstated"] if not model_identified else [])
+                  + ["exact_model_manual_passage_unverified"]})
 
         cleaning = [b for b in blocks if CLEANING.search(b["text"])]
         if cleaning and re.search(r"\b(?:clean|care|maintenance|disinfect|saniti[sz])", heading, re.I):
@@ -194,11 +235,20 @@ def audit_public_context(source: dict, contract: dict) -> dict:
         rows = [b for b in blocks if b["kind"] == "table_row"]
         if rows and any(PRICE.search(b["text"]) for b in rows):
             offer_rows = [b for b in rows if OFFER.search(b["text"])]
+            anonymous = [b for b in offer_rows if _unnamed_offer(b)]
             if offer_rows or contract.get("price_observed_at") is None:
                 flag("PRICE_OFFER_FRESHNESS_REVIEW", "P2", heading, anchor,
-                     offer_rows or [b for b in rows if PRICE.search(b["text"])],
-                     ["undated-price", "limited-offer" if offer_rows else "price-table"],
-                     "Offer/product identity or observed price validity not independently verified")
+                     anonymous or offer_rows or [b for b in rows if PRICE.search(b["text"])],
+                     (["undated-price"] if not contract.get("price_observed_at") else [])
+                     + ["unnamed-limited-offer" if anonymous else
+                        "limited-offer" if offer_rows else "price-table"],
+                     "Exact product identity, observation date and offer validity need review",
+                     {"anonymous_offer_row_present": bool(anonymous),
+                      "price_observation_date_present": bool(contract.get("price_observed_at")),
+                      "row_product_link_present": any(b["links"] for b in (anonymous or offer_rows)),
+                      "evidence_gaps": (["offer_product_identity_missing"] if anonymous else [])
+                      + (["price_observed_at_missing"] if not contract.get("price_observed_at") else [])
+                      + (["offer_validity_unverified"] if offer_rows else [])})
 
     counts = Counter(x["priority"] for x in issues)
     return {
@@ -220,6 +270,8 @@ def audit_public_context(source: dict, contract: dict) -> dict:
             "Link presence and government domain do not establish product/model claim support",
             "No target-market verified SERP or Owner original was supplied",
             "Only derived hashes/heading metadata may be committed; full article stays private",
+            "Model IDs or linked pages are not machine-verified manufacturer entailment",
+            "Price candidate metadata cannot prove an offer is false or expired",
         ],
     }
 
