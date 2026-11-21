@@ -183,3 +183,39 @@ R11 regression fixtures are synthetic controls, never qualified editorial
 labels. The real before/after comparison must use exactly the same frozen
 KissSelf WP snapshots and report candidate counts **and** improved evidence
 specificity separately. No article rewriting, WordPress or Production writes.
+
+## R12 blind public-context QC review — independent editorial gold before alerts
+
+Use `scripts/r12_blind_qc.py` only on ignored `.runs` real benchmark snapshots
+and reports. Run `source-pack` first: it verifies two distinct frozen source
+contracts and produces a **source-only** private inventory of every section,
+with no R10/R11 notice visible. Two different human editors must independently
+label *every section* for actionable QC review opportunities, including
+negative sections, and explain positive findings. The codes classify an
+editorial **need to investigate**, not a false product fact or intent verdict.
+Generate an offline, private `source-html` form so editors need not hand-edit
+JSON; each must affirmatively mark even sections with no issue. Preserve
+their exported JSON separately. Do not share one editor's labels with the
+other before both submit.
+Do not fabricate, infer or prefill human labels from machine candidates or
+Owner's prior *rule-preference* decisions. If editors disagree, `seal-gold`
+requires an explicit Owner adjudication on each disputed section.
+
+Only after sealing this source-only gold, run `pair-pack` with the original
+R10/R11 reports from the **same exact post ID, URL, revision, content hash,
+benchmark role and scope**. Reveal only shuffled left/right notices, never
+version names; keep the random sealed map private from the two independent
+pair raters. Ask each rater to grade notice actionability on 0–3, then `score`
+computes *review-opportunity* TP/FP/FN and masked-card actionability.
+Use `pair-html` for independent, offline paired-card ratings only after the
+source labels are sealed. Keep the version map in `.runs/.../sealed/` and do
+not distribute it to editors. With unchanged candidate locations, detection
+precision/recall will not improve
+merely because R11 supplies clearer evidence-gap text; score it separately.
+Missing or incomplete genuine human labels **must fail closed**.
+
+All frozen article text, human notes, raw scores and version mapping stay in
+private `.runs`; only aggregate, non-sensitive metrics and source hashes may
+enter the Git report. Never call this a verified manufacturer-fact verdict,
+Search Intent PASS, new-article writing A/B, or Production-ready result.
+No automatic publishing-pipeline integration, writing, merge or release.
