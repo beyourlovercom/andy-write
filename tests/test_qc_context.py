@@ -114,6 +114,80 @@ class ContextQCTests(unittest.TestCase):
         self.assertEqual(result["summary"]["candidate_count"], 0)
         self.assertEqual(result["status"], "HUMAN_REVIEW_REQUIRED")
 
+    def test_ks04_unnamed_waterproof_model_is_attribution_review_not_fake_fact(self):
+        html = ('<h3>Massage Wands</h3><h4>Pros and Cons</h4><table>'
+                '<tr><th>Feature</th><th>Waterproof Model</th></tr>'
+                '<tr><td>Power levels</td><td>Four intensity levels</td></tr>'
+                '<tr><td>Waterproof</td><td><a href="https://example.test/ipx-explainer">'
+                'IPX7, can be submerged for 30 minutes</a></td></tr>'
+                '<tr><td>Charging Time</td><td>Four hours for 2.5 hours of play</td></tr>'
+                '</table>')
+        post = source(html)
+        result = audit_public_context(post, contract(post))
+        item, = [x for x in result["candidates"] if x["code"] ==
+                 "MODEL_SPEC_PROVENANCE_REVIEW"]
+        self.assertEqual(item["heading"], "Massage Wands")
+        self.assertEqual(item["priority"], "P1")
+        self.assertFalse(item["review_details"]["explicit_model_identifier_present"])
+        self.assertTrue(item["review_details"]["claim_source_link_present"])
+        self.assertFalse(item["review_details"]["manufacturer_passage_verified"])
+        self.assertIn("model_identity_unstated", item["review_details"]["evidence_gaps"])
+        self.assertFalse(item["verified_fact_error"])
+        self.assertNotIn("Four intensity levels", json.dumps(result))
+
+    def test_ks04_identified_model_and_manual_link_still_needs_human_claim_match(self):
+        html = ('<h3>Model HV-360</h3><p>Model HV-360 has an '
+                '<a href="https://maker.example/manual-hv360.pdf">'
+                'IPX7 waterproof rating for 30 minutes submerged</a>.</p>')
+        post = source(html)
+        result = audit_public_context(post, contract(post))
+        item, = result["candidates"]
+        details = item["review_details"]
+        self.assertTrue(details["explicit_model_identifier_present"])
+        self.assertTrue(details["claim_source_link_present"])
+        self.assertFalse(details["manufacturer_passage_verified"])
+        self.assertNotIn("model_identity_unstated", details["evidence_gaps"])
+
+    def test_battery_spec_without_ipx_also_needs_model_attribution(self):
+        post = source('<h2>Massage Wands</h2><p>Battery life is 2.5 hours on one '
+                      'charge, with a charging time of 4 hours.</p>')
+        result = audit_public_context(post, contract(post))
+        self.assertEqual([x["code"] for x in result["candidates"]],
+                         ["MODEL_SPEC_PROVENANCE_REVIEW"])
+
+    def test_ks05_unnamed_limited_offer_even_with_observation_date_is_review(self):
+        post = source('<h3>Suction Toys</h3><table><tr><th>Toy Name</th>'
+                      '<th>Price</th></tr><tr><td>Limited Time Offer</td>'
+                      '<td>$89</td></tr></table>')
+        c = contract(post)
+        c["price_observed_at"] = "2026-11-21"
+        item, = audit_public_context(post, c)["candidates"]
+        self.assertEqual(item["code"], "PRICE_OFFER_FRESHNESS_REVIEW")
+        self.assertEqual(item["priority"], "P2")
+        self.assertTrue(item["review_details"]["anonymous_offer_row_present"])
+        self.assertTrue(item["review_details"]["price_observation_date_present"])
+        self.assertIn("offer_product_identity_missing", item["review_details"]["evidence_gaps"])
+        self.assertFalse(item["verified_fact_error"])
+        self.assertNotIn("Limited Time Offer", json.dumps(item))
+
+    def test_named_offer_with_link_still_requires_offer_validity_review(self):
+        post = source('<h3>Offers</h3><table><tr><td>Limited Time Offer: '
+                      '<a href="https://maker.example/model-ABC">Model ABC</a></td>'
+                      '<td>$89</td></tr></table>')
+        c = contract(post)
+        c["price_observed_at"] = "2026-11-21"
+        item, = audit_public_context(post, c)["candidates"]
+        self.assertFalse(item["review_details"]["anonymous_offer_row_present"])
+        self.assertTrue(item["review_details"]["row_product_link_present"])
+        self.assertIn("offer_validity_unverified", item["review_details"]["evidence_gaps"])
+
+    def test_named_dated_standard_price_is_not_auto_flagged(self):
+        post = source('<h3>Products</h3><table><tr><td>Model ABC</td>'
+                      '<td>$89</td></tr></table>')
+        c = contract(post)
+        c["price_observed_at"] = "2026-11-21"
+        self.assertEqual(audit_public_context(post, c)["candidates"], [])
+
     def test_frozen_source_identity_and_role_fail_closed(self):
         post = source("<h2>Care</h2><p>Keep things clean.</p>")
         frozen = contract(post)

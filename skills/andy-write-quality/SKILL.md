@@ -150,3 +150,36 @@ comparison, relevant comparisons must remain allowable. This manual
 inspection tool does NOT change Quality, Draft or the default writing pipeline
 and never produces a writing-quality PASS. Actual writing A/B needs explicit
 Owner source/rewrite authorization and independently labeled editorial review.
+
+## R11 exact-model and limited-offer evidence-traceability controls
+
+The manual, offline `qc-context` V1.1 adds **derived evidence gaps**, not a
+product-fact verifier. The source must still match its frozen public benchmark
+contract (URL, post ID, revision, rendered SHA-256 and source role). Keep
+benchmark prose, manufacturer documents and any Owner originals out of Git.
+
+- **KS04 / model attribution:** when a section makes numeric waterproof,
+  charging, runtime or similar product-specific claims, identify the exact
+  manufacturer and model before crediting the figures. A generic column such
+  as "Waterproof Model" is not an exact model. A present SKU, model string,
+  source link or explanation of IPX7 does **not** automatically validate the
+  model/manual claim passage. Manufacturer documents must be matched manually
+  to the model and conditions, including test load, duration, version and
+  wet-environment charging cautions. Valid model parameters are not fabricated
+  just because the article failed to attribute them.
+- **KS05 / offers:** a table row headed only "Limited Time Offer" is not a
+  product name. A price still needs a product identity, source URL, observation
+  date and applicable promotional validity. Even with an observation date,
+  an unnamed or undated limited offer remains P2 REVIEW. An identified,
+  dated ordinary product price must not be mistaken for an anonymous offer.
+- **Human gate:** `review_details` contains only Boolean checks and generic
+  evidence-gap codes; it does not contain private article excerpts, true
+  model identifiers, retrieved manual prose, or false-positive judgments.
+  Every machine candidate remains `NEEDS_HUMAN_REVIEW`, with
+  `verified_fact_error: false`, `publish_ready: false`, and no claim of genuine
+  human precision/recall. Do not modify the default publishing pipeline.
+
+R11 regression fixtures are synthetic controls, never qualified editorial
+labels. The real before/after comparison must use exactly the same frozen
+KissSelf WP snapshots and report candidate counts **and** improved evidence
+specificity separately. No article rewriting, WordPress or Production writes.
