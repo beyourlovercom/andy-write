@@ -22,6 +22,14 @@ Owner 明确选择 **A：取消文章中的婴幼儿跑题内容，保留 QC 提
 
 本次只接受“该段落应在有授权的编辑阶段移除或校正”的方向性建议；**Owner 明确暂不授权改写文章**。KissSelf 原文、冻结 Scope Contract、R8/R9/R10 的候选原始记录、运行时检测行为均保持不变。
 
+## KS04 / KS05 补充实证（2026-11-21）
+
+已完成 [KS04 / KS05 真实证据复核报告](R10_KS04_KS05_REAL_EVIDENCE_REVIEW_2026-11-21.md)：
+
+- **KS04 — 技术建议保留 P1，但收窄触发条件。** 表格参数高度吻合 Magic Wand Waterproof HV-360 厂家说明书；提醒重点应是具体型号及参数适用条件没有写明，不能把这些数字直接判作虚假。研究状态：`EVIDENCE_REVIEWED_KEEP_RECOMMENDED`。
+- **KS05 — 技术建议保留 P2。** “Limited Time Offer / $89” 没有可识别商品、商品链接及有效日期，因此报价不可追溯，但不等于证实价格错误。研究状态：`EVIDENCE_REVIEWED_KEEP_RECOMMENDED`。
+- **Owner 选择仍保留原始「待查」。** 以上为研究后的建议，不自动转换为 Owner 已批准、文章事实真值、默认流水线规则变更或发布授权。
+
 ## 后续门禁
 
 - 旧 R8 五项 `human_editorial_label` 保持 `null`；本次不是事实真值标注。
